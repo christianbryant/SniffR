@@ -22,10 +22,16 @@ This device follows these set of rules:
 
 TODO
 
+## Hardware Parts List
+* ESP32-C3 (Compact, reliable, and integrated battery controller)
+* SCD40 (Compact, Precise Air Quality Sensor)
+* 4000mAh Battery
+* 3.5in Touch Screen
+
 ### Prerequisites
 
-Platform.io
-ESPIDF
+* Platform.io
+* ESPIDF
 
 ### Installing
 
