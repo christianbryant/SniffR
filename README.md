@@ -17,16 +17,15 @@ This device follows these set of rules:
 * Sensor Data Integration
 * Battery Management Tooling
 
-
-## Getting Started
-
-TODO
-
 ## Hardware Parts List
 * ESP32-C3 (Compact, reliable, and integrated battery controller)
 * SCD40 (Compact, Precise Air Quality Sensor)
 * 4000mAh Battery
 * 3.5in Touch Screen
+
+## Getting Started
+
+TODO
 
 ### Prerequisites
 
