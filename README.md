@@ -14,6 +14,7 @@ This device follows these set of rules:
 ## Items Needing to be Completed
 
 * Menu LCD Development
+* WebUI
 * Sensor Data Integration
 * Battery Management Tooling
 
