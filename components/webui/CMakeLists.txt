@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "scd40.c"
+    SRCS "webui.c"
     INCLUDE_DIRS "include"
     REQUIRES driver
 )
