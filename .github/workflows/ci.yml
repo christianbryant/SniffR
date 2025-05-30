@@ -1,0 +1,33 @@
+name: Build Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up ESP-IDF build environment
+      uses: espressif/esp-idf-ci-action@v1.0.1
+      with:
+        esp_idf_version: latest
+        target: esp32  # Change this to esp32s2, esp32c3, etc. if needed
+
+    - name: Build the project
+      run: idf.py build
+    - name: Cache ESP-IDF build
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.espressif
+          build
+        key: ${{ runner.os }}-esp-idf-${{ hashFiles('**/CMakeLists.txt') }}
