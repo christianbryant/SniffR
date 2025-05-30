@@ -1,6 +1,6 @@
 # SniffR | Mobile Air Quality Sensor Device
 
-This project is for the software side of development for my custom Air Quality Monitoring Device 
+This project is for the software side of development for my custom Air Quality Monitoring Device.
 My passion for this project is driven by the yearly smoke layer released in the summer by major forest fires in the PNW.
 This device follows these set of rules:
 ```
@@ -14,8 +14,15 @@ This device follows these set of rules:
 ## Items Needing to be Completed
 
 * Menu LCD Development
+* WebUI
 * Sensor Data Integration
 * Battery Management Tooling
+
+## Hardware Parts List
+* ESP32-C3 (Compact, reliable, and integrated battery controller)
+* SCD40 (Compact, Precise Air Quality Sensor)
+* 4000mAh Battery
+* 3.5in Touch Screen
 
 
 ## Getting Started
@@ -24,8 +31,8 @@ TODO
 
 ### Prerequisites
 
-Platform.io
-ESPIDF
+* Platform.io
+* ESPIDF
 
 ### Installing
 
