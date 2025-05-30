@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up ESP-IDF build environment
-      uses: espressif/esp-idf-ci-action@v1.0.1
+      uses: espressif/esp-idf-ci-action@v1
       with:
         esp_idf_version: latest
         target: esp32  # Change this to esp32s2, esp32c3, etc. if needed
