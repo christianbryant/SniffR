@@ -1,7 +1,8 @@
 # SniffR | Mobile Air Quality Sensor Device
 
-This project is for the software side of development for my custom Air Quality Monitoring Device.
-My passion for this project is driven by the yearly smoke layer released in the summer by major forest fires in the PNW.
+This project is for the software side of development for my custom Air Quality Monitoring Device.  
+My passion for this project is driven by the yearly smoke layer released in the summer by major forest fires in the PNW.  
+Project to be shown off at TeardownPDX.  
 This device follows these set of rules:
 ```
 1. Must be power-efficient
