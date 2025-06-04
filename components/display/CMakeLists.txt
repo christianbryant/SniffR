@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "display.c"
+    SRCS "st7796_driver.c"
     INCLUDE_DIRS "include"
     REQUIRES driver
 )
