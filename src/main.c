@@ -3,8 +3,8 @@
 #include "./../components/esp_lvgl_port/include/esp_lvgl_port.h"
 #include "./../components/esp_lcd_st7796/priv_include/esp_lcd_st7796_interface.h"
 #include "display_driver.h"
-#include "./../components/lvgl_widgets/lvgl_arc.c"
-// #include "./../components/lvgl_widgets/lvgl_home_page.c"
+// #include "./../components/lvgl_widgets/lvgl_arc.c"
+#include "./../components/lvgl_widgets/lvgl_home_page.c"
 #include "esp_lcd_io_spi.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
@@ -28,7 +28,7 @@ void co2_arc_task(void *pvParameters) {
     lv_obj_t *scr = (lv_obj_t *)pvParameters;
 
     lvgl_port_lock(0);
-    create_dynamic_co2_arc();
+    create_dynamic_co2_arc(scr);
     lvgl_port_unlock();
 
     while (1) {
@@ -55,6 +55,7 @@ void co2_arc_task(void *pvParameters) {
 void app_main(void)
 {
     display_hw_init();
+    // lv_obj_t *scr = lv_obj_create(lv_scr_act());
     // xTaskCreate(
     //     display_main_task,            // Task function
     //     "MyTask",           // Name (for debugging)
@@ -67,7 +68,7 @@ void app_main(void)
     // create_home_page(scr);
     // lvgl_port_unlock();
     lvgl_port_lock(0);
-    create_dynamic_co2_arc();
+    create_home_page();
     lvgl_port_unlock();
     lv_mem_monitor_t mon;
     lv_mem_monitor(&mon);
