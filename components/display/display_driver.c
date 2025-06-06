@@ -52,7 +52,7 @@ esp_err_t display_spi_init(void){
         .mosi_io_num = PIN_NUM_MOSI,
         .miso_io_num = PIN_NUM_MISO,
         .sclk_io_num = PIN_NUM_CLK,
-        .max_transfer_sz = DISP_WIDTH * DISP_HEIGHT * sizeof(uint16_t) + 8,
+        .max_transfer_sz = 4092,
     };
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &bus_config, SPI_DMA_CH_AUTO));
     ESP_LOGI("LVGL", "SPI bus initialized");
@@ -81,8 +81,9 @@ esp_err_t display_panel_init(esp_lcd_panel_io_handle_t *io_handle){
 esp_err_t display_panel_driver_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_handle_t *panel_handle){
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = PIN_NUM_RST,
-        .rgb_endian = LCD_RGB_ENDIAN_BGR,
-        .bits_per_pixel = 16,
+        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
+        .data_endian = LCD_RGB_DATA_ENDIAN_BIG, // Use big endian for RGB data
+        .bits_per_pixel = 24,
     };
     // Create the LCD panel driver
     ESP_ERROR_CHECK(esp_lcd_new_panel_st7796_general(io_handle, &panel_config, panel_handle));
@@ -120,7 +121,7 @@ esp_err_t display_lvgl_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_h
         .task_stack = 8192,
         .task_affinity = -1,
         .task_max_sleep_ms = 10,
-        .task_stack_caps = MALLOC_CAP_8BIT,
+        .task_stack_caps = MALLOC_CAP_DEFAULT,
         .timer_period_ms = 10,
     };
     ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
@@ -130,19 +131,19 @@ esp_err_t display_lvgl_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_h
     const lvgl_port_display_cfg_t disp_cfg = {
         .io_handle = io_handle,
         .panel_handle = panel_handle,
-        .buffer_size = DISP_WIDTH * 40,
+        .buffer_size = (DISP_WIDTH * DISP_HEIGHT) / 10,
         .double_buffer = true,
         .hres = DISP_WIDTH,
         .vres = DISP_HEIGHT,
         .monochrome = false,
-        .color_format = LV_COLOR_FORMAT_RGB565,
+        .color_format = LV_COLOR_FORMAT_RGB888,
         .rotation = {
             .swap_xy = false,
             .mirror_x = true,
             .mirror_y = false,
         },
         .flags = {
-            .buff_dma = true,
+            .buff_dma = false,
             .swap_bytes = false,
         }
     };
@@ -159,6 +160,7 @@ esp_err_t display_hw_init(void){
     ESP_ERROR_CHECK(display_spi_init());
     ESP_ERROR_CHECK(display_panel_init(&io_handle));
     ESP_ERROR_CHECK(display_panel_driver_init(io_handle, &panel_handle));
+    panel_handle->invert_color(panel_handle, true);
     // ESP_ERROR_CHECK(display_backlight_init());
     ESP_ERROR_CHECK(display_lvgl_init(io_handle, panel_handle));
     return ESP_OK;
