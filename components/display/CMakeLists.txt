@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "display_driver.c"
+    SRCS "touch_driver.c" "display_driver.c"
     INCLUDE_DIRS "include"
-    REQUIRES driver lvgl esp_lcd
+    REQUIRES driver lvgl esp_lcd esp_lcd_touch
 )

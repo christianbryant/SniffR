@@ -4,6 +4,7 @@
 
 
 
+
 void lv_example_get_started_1(void);
 esp_err_t display_hw_init(void);
 

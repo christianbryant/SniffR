@@ -3,6 +3,7 @@
 #include "./../components/esp_lvgl_port/include/esp_lvgl_port.h"
 #include "./../components/esp_lcd_st7796/priv_include/esp_lcd_st7796_interface.h"
 #include "display_driver.h"
+#include "touch_driver.h"
 // #include "./../components/lvgl_widgets/lvgl_arc.c"
 #include "./../components/lvgl_widgets/lvgl_home_page.c"
 #include "esp_lcd_io_spi.h"
@@ -10,6 +11,7 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_interface.h"
 #include "esp_lcd_panel_dev.h"
+#include "driver/i2c_master.h"
 
 #include <inttypes.h>
 
@@ -51,22 +53,18 @@ void co2_arc_task(void *pvParameters) {
 // }
 
 
-
 void app_main(void)
 {
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_6) | (1ULL << GPIO_NUM_7),
+        .mode = GPIO_MODE_INPUT_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+    };
+    ESP_ERROR_CHECK(gpio_config(&io_conf));
+    i2c_master_dev_handle_t i2c_dev;
     display_hw_init();
-    // lv_obj_t *scr = lv_obj_create(lv_scr_act());
-    // xTaskCreate(
-    //     display_main_task,            // Task function
-    //     "MyTask",           // Name (for debugging)
-    //     4096,               // Stack size (in words, often 4 bytes each)
-    //     scr,               // Parameters (optional)
-    //     5,                  // Priority (higher = more important)
-    //     NULL                // Task handle (optional)s
-    // );
-    // lvgl_port_lock(0);
-    // create_home_page(scr);
-    // lvgl_port_unlock();
+    touch_i2c_init(I2C_NUM_0, &i2c_dev, GPIO_NUM_6, GPIO_NUM_7);
     lvgl_port_lock(0);
     create_home_page();
     lvgl_port_unlock();

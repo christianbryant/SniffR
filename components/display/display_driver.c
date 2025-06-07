@@ -8,6 +8,8 @@
 #include "esp_lcd_panel_interface.h"
 #include "esp_lcd_panel_dev.h"
 
+#include "touch_driver.h"
+
 #include <inttypes.h>
 
 
@@ -163,6 +165,8 @@ esp_err_t display_hw_init(void){
     panel_handle->invert_color(panel_handle, true);
     // ESP_ERROR_CHECK(display_backlight_init());
     ESP_ERROR_CHECK(display_lvgl_init(io_handle, panel_handle));
+    ESP_LOGI("LVGL", "Display hardware initialized");
+    ESP_LOGI("LVGL", "Touch hardware initialized");
     return ESP_OK;
 }
 

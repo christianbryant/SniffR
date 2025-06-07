@@ -9,6 +9,7 @@
 static void settings_btn_event_handler(lv_event_t *e)
 {
     // event handler logic
+    ESP_LOGI("Settings Button", "Settings button clicked");
 }
 
 void top_bar_create(lv_obj_t *parent)
@@ -39,7 +40,8 @@ void top_bar_create(lv_obj_t *parent)
     lv_label_set_text(settings_label, LV_SYMBOL_SETTINGS);
     lv_obj_set_style_text_color(settings_label, lv_color_hex(0x11273C), LV_PART_MAIN);
     lv_obj_center(settings_label);
-    lv_obj_add_event_cb(settings_btn, settings_btn_event_handler, LV_EVENT_CLICKED, NULL);
+    lv_obj_move_foreground(settings_btn);
+    lv_obj_add_event_cb(settings_btn, settings_btn_event_handler, LV_EVENT_PRESSED, NULL);
 
     // Center label
     lv_obj_t *title_label = lv_label_create(top_bar);
