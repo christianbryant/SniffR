@@ -48,13 +48,13 @@ void update_arc_values(lv_timer_t *timer){
 void rand_update_co2_arc_value(lv_obj_t *arc, int32_t co2_value)
 {
     lv_arc_set_value(arc, co2_value);
-    if(co2_value >= 500 && co2_value <= 800) {
+    if(co2_value >= 400 && co2_value <= 1000) {
         // Set color to green if value is between 500 and 600
         update_arc_color(arc, lv_color_hex(0x00ff00));
-    } else if(co2_value > 800 && co2_value <= 1200) {
+    } else if(co2_value > 1000 && co2_value <= 1200) {
         // Set color to yellow if value is between 600 and 700
         update_arc_color(arc, lv_color_hex(0xffff00));
-    } else if (co2_value > 1200 && co2_value <= 1800) {
+    } else if (co2_value > 1200 && co2_value <= 1500) {
         // Set color to red for values outside the range
         update_arc_color(arc, lv_color_hex(0xff8000)); // Orange color
     } else {
@@ -104,14 +104,14 @@ void rand_update_humid_arc_value(lv_obj_t *arc, float hum_value)
 void rand_update_temp_arc_value(lv_obj_t *arc, float temp_value)
 {
     lv_arc_set_value(arc, temp_value);
-    if(temp_value >= -50 && temp_value <= 0) {
-        // Set color to green if value is between 500 and 600
+    if(temp_value >= -10 && temp_value <= 10) {
+        // Set color to blue if value is between 500 and 600
         update_arc_color(arc, lv_color_hex(0x0000FF));
-    } else if(temp_value > 0 && temp_value <= 10) {
+    } else if(temp_value > 10 && temp_value <= 20) {
         // Set color to yellow if value is between 600 and 700
         update_arc_color(arc, lv_color_hex(0xffff00));
-    } else if (temp_value > 10 && temp_value <= 20) {
-        // Set color to red for values outside the range
+    } else if (temp_value > 20 && temp_value <= 30) {
+        // Set color to orange for values outside the range
         update_arc_color(arc, lv_color_hex(0xff8000)); // Orange color
     } else {
         // Set color to red for values outside the range
@@ -216,7 +216,7 @@ lv_obj_t *create_dynamic_temp_arc(lv_obj_t *parent)
     // Set the arc's value and range
     lv_arc_set_value(arc, 0); // Set the current value
     
-    lv_arc_set_range(arc, -50, 50); // Set the range of the arc
+    lv_arc_set_range(arc, -10, 50); // Set the range of the arc
     
     // Set the arc's style
     lv_obj_set_style_arc_color(arc, lv_color_hex(0xFF0000), LV_PART_INDICATOR);

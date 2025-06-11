@@ -65,19 +65,6 @@ void co2_arc_task(void *pvParameters) {
     }
 }
 
-// void display_main_task(void *pvParameters) {
-//     lv_obj_t *scr = (lv_obj_t *)pvParameters;
-
-//     lvgl_port_lock(0);
-//     create_home_page(scr);
-//     lvgl_port_unlock();
-
-//     while (1) {
-//         // Optional: update arc value dynamically
-//         vTaskDelay(pdMS_TO_TICKS(1000));
-//     }
-// }
-
 // Declare a global mutex for I2C bus
 
 void app_main(void)
@@ -89,7 +76,6 @@ void app_main(void)
     ESP_ERROR_CHECK(i2c_init(I2C_NUM_0, &i2c_scd40,&i2c_touch, &bus_handle, I2C_SDA_GPIO, I2C_SCL_GPIO, I2C_ADDR_SCD40, I2C_ADDR_TOUCH));
     touch_i2c_init(bus_handle);
     ESP_ERROR_CHECK(scd40_init(i2c_scd40));
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
     lvgl_port_lock(0);
     create_home_page(i2c_scd40);
     lvgl_port_unlock();
