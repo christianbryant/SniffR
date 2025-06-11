@@ -25,10 +25,10 @@ SniffR adheres to the following principles:
 ---
 
 ## 📦 Hardware Components  
-- **ESP32-C3** — compact, reliable, with integrated battery management  
-- **SCD40** — precise air quality sensor  
-- **4000mAh Battery** — long-lasting portable power  
-- **3.5" Touch Screen (ST7796U)** — intuitive user interface  
+- **ESP32-C3 [LINK](https://a.co/d/fWBBhIx)** — compact, reliable, with integrated battery management  
+- **SCD40 [LINK](https://a.co/d/f7Sk5b3)** — precise air quality sensor  
+- **4000mAh Battery [LINK](https://a.co/d/9ttn1O9)** — long-lasting portable power  
+- **3.5" Touch Screen (ST7796U) [LINK](https://a.co/d/iygLK4M)** — intuitive user interface  
 
 ---
 
