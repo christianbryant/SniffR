@@ -1,69 +1,78 @@
 # SniffR | Mobile Air Quality Sensor Device
 
-This project is for the software side of development for my custom Air Quality Monitoring Device.  
-My passion for this project is driven by the yearly smoke layer released in the summer by major forest fires in the PNW.  
-Project to be shown off at TeardownPDX.  
-This device follows these set of rules:
-```
-1. Must be power-efficient
-2. Must be compact
-3. Must be non-technical user-friendly
-4. Must be cost-effective
-5. Must be fully open-source
-```
+**SniffR** is an open-source mobile air quality monitoring device designed to track real-time air quality conditions in your immediate environment. This project focuses on developing the software stack for SniffR, with the goal of making air quality monitoring **accessible**, **affordable**, and **user-friendly**—especially important during the wildfire seasons in the Pacific Northwest.  
 
-## Items Needing to be Completed
+This device will be showcased at **Teardown PDX 2025**.  
 
-* Menu LCD Development
-* WebUI/Home Assistant Integration (MQTT?)
-* Sensor Data Integration
-* Battery Management Tooling
+---
 
-## Hardware Parts List
-* ESP32-C3 (Compact, reliable, and integrated battery controller)
-* SCD40 (Compact, Precise Air Quality Sensor)
-* 4000mAh Battery
-* 3.5in Touch Screen
+## 📌 Design Goals  
+SniffR adheres to the following principles:  
+1. **Power-efficient** — optimized for long battery life  
+2. **Compact** — portable and easy to carry  
+3. **User-friendly** — designed for non-technical users  
+4. **Cost-effective** — affordable without compromising on quality  
+5. **Fully open-source** — open for everyone to learn, build, and improve  
 
+---
 
-## Getting Started
+## 🔧 Current Development Focus  
+- Menu LCD development  
+- Web UI / Home Assistant integration (via MQTT or similar)  
+- Sensor data integration  
+- Battery management tooling  
 
-TODO
+---
 
-### Prerequisites
+## 📦 Hardware Components  
+- **ESP32-C3** — compact, reliable, with integrated battery management  
+- **SCD40** — precise air quality sensor  
+- **4000mAh Battery** — long-lasting portable power  
+- **3.5" Touch Screen** — intuitive user interface  
 
-* Platform.io
-* ESPIDF
+---
 
-### Installing
+## 🚀 Getting Started  
 
-TODO
+### Prerequisites  
+- [PlatformIO](https://platformio.org/)  
+- [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)  
 
-## Deployment
+### Installation  
+_Installation instructions coming soon._  
 
-Code will be flashed onto an ESP-32-C3 MCU board
+---
 
-## Built With
+## 📲 Deployment  
+Code will be flashed onto an ESP32-C3 microcontroller board.  
 
-* Platform.io
-* Fusion360
+---
 
-## Contributing
+## 🛠️ Built With  
+- [PlatformIO](https://platformio.org/) — development environment  
+- [Fusion360](https://www.autodesk.com/products/fusion-360/) — for mechanical design and enclosures  
 
-TODO
+---
 
-## Versioning
+## 🤝 Contributing  
+_Contribution guidelines coming soon._  
 
-TODO
+---
 
-## Authors
+## 📌 Versioning  
+_Versioning strategy will be documented in the future._  
 
-* **Christian Bryant** - *Initial work* - [christianbryant](https://github.com/christianbryant)
+---
 
-## License
+## 👨‍💻 Author  
+- **Christian Bryant** — [GitHub Profile](https://github.com/christianbryant)  
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+---
 
-## Acknowledgments
+## 📄 License  
+This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.  
 
-TODO
+---
+
+## 🙏 Acknowledgments  
+_Acknowledgments to be added._  
