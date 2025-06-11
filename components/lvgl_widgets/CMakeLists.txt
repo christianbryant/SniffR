@@ -4,5 +4,5 @@ set(srcs "lvgl_arc.c"
 idf_component_register(
     SRCS ${srcs}
     INCLUDE_DIRS "include"
-    REQUIRES driver lvgl esp_lcd esp_lcd_touch
+    REQUIRES driver lvgl esp_lcd esp_lcd_touch esp_adc
 )

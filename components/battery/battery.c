@@ -18,13 +18,25 @@
 
 static const char *TAG = "Battery";
 
-esp_err_t get_battery_voltage_mv(int *voltage_mv, float *voltage) {
+int get_battery_percentage(adc_oneshot_unit_handle_t adc_handle){
+    int voltage_mv;
+    float voltage_v;
+    get_battery_voltage_mv(adc_handle, &voltage_mv, &voltage_v);
+    float percent = (voltage_v - 3.2) / (4.2 - 3.2) * 100.0;
+    if(percent > 100.0){
+        percent = 100.0;
+    }else if (percent < 0){
+        percent = 0;
+    }
+    return (int)percent;
+}
+
+esp_err_t battery_init(adc_oneshot_unit_handle_t *adc_handle){
     esp_err_t ret;
-    adc_oneshot_unit_handle_t adc_handle = NULL;
     adc_oneshot_unit_init_cfg_t init_config = {
         .unit_id = BATTERY_ADC_UNIT,
     };
-    ret = adc_oneshot_new_unit(&init_config, &adc_handle);
+    ret = adc_oneshot_new_unit(&init_config, adc_handle);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize ADC unit: %s", esp_err_to_name(ret));
         return ret;
@@ -34,13 +46,17 @@ esp_err_t get_battery_voltage_mv(int *voltage_mv, float *voltage) {
         .atten = ADC_ATTEN,
         .bitwidth = ADC_BITWIDTH_DEFAULT,
     };
-    ret = adc_oneshot_config_channel(adc_handle, BATTERY_ADC_CHANNEL, &config);
+    ret = adc_oneshot_config_channel(*adc_handle, BATTERY_ADC_CHANNEL, &config);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to configure ADC channel: %s", esp_err_to_name(ret));
-        adc_oneshot_del_unit(adc_handle);
+        adc_oneshot_del_unit(*adc_handle);
         return ret;
     }
+    return ESP_OK;
+}
 
+esp_err_t get_battery_voltage_mv(adc_oneshot_unit_handle_t adc_handle, int *voltage_mv, float *voltage) {
+    esp_err_t ret;
     int raw = 0;
     ret = adc_oneshot_read(adc_handle, BATTERY_ADC_CHANNEL, &raw);
     if (ret != ESP_OK) {
@@ -81,7 +97,6 @@ esp_err_t get_battery_voltage_mv(int *voltage_mv, float *voltage) {
     } else if (*voltage > 4.2) {
         ESP_LOGW(TAG, "Battery voltage is high: %.2f V", *voltage);
     }
-    adc_oneshot_del_unit(adc_handle);
 
     ESP_LOGI(TAG, "Battery voltage: %d mV", *voltage_mv);
     return ESP_OK;

@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include "./../Components/battery/include/battery.h"
+#include "battery.h"
 #include "driver/i2c_master.h"
 #include "driver/gpio.h"
 #include "scd40.h"

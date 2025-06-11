@@ -6,11 +6,72 @@
 #include "esp_check.h"
 #include "lvgl_arc.h"
 #include "lvgl_home_page.h"
+#include "battery.h"
+#include "esp_adc/adc_oneshot.h"
+
+struct battery_update_data {
+    lv_obj_t *battery_label;
+    adc_oneshot_unit_handle_t adc_handle;
+};
 
 static void settings_btn_event_handler(lv_event_t *e)
 {
     // event handler logic
     ESP_LOGI("Settings Button", "Settings button clicked");
+}
+
+void voltage_update_battery(adc_oneshot_unit_handle_t adc_handle, lv_obj_t *battery_label){
+    int battery_mv;
+    float battery_v;
+    get_battery_voltage_mv(adc_handle, &battery_mv, &battery_v);
+    lv_label_set_text_fmt(battery_label, "%.2f", battery_v);
+}
+
+void percent_update_battery(adc_oneshot_unit_handle_t adc_handle, lv_obj_t *battery_label){
+    int battery_percent = get_battery_percentage(adc_handle);
+    lv_label_set_text_fmt(battery_label, "%d%%", battery_percent);
+}
+
+void icon_update_battery(adc_oneshot_unit_handle_t adc_handle, lv_obj_t *battery_icon)
+{
+    int battery_level = get_battery_percentage(adc_handle);
+    // Update the battery icon based on the battery level
+    if (battery_level > 75) {
+        lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_FULL);
+    } else if (battery_level > 50) {
+        lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_3);
+    } else if (battery_level > 25) {
+        lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_2);
+    } else {
+        lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_EMPTY);
+    }
+}
+
+void timer_update_battery(lv_timer_t *timer){
+    struct battery_update_data *data = (struct battery_update_data *) lv_timer_get_user_data(timer);
+    lv_obj_t *battery_label = data->battery_label;
+    adc_oneshot_unit_handle_t adc_handle = data->adc_handle;
+    // TODO: Adjust what is displayed based on user settings
+    icon_update_battery(adc_handle, battery_label);
+    //percent_update_battery(adc_handle, battery_label);
+    //temp_update_battery(adc_handle, battery_label);
+}
+
+lv_obj_t *create_battery_text(lv_obj_t *parent){
+    lv_obj_t *title_label = lv_label_create(parent);
+    lv_label_set_text_fmt(title_label, "%.2f", 0.00f);
+    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_18, LV_PART_MAIN);
+    lv_obj_set_style_text_color(title_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_center(title_label);
+    return title_label;
+}
+
+lv_obj_t *create_button_icon(lv_obj_t *parent){
+    lv_obj_t *battery_icon = lv_label_create(parent);
+    lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_FULL);
+    lv_obj_set_style_text_color(battery_icon, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_center(battery_icon);
+    return battery_icon;
 }
 
 void top_bar_create(lv_obj_t *parent)
@@ -57,11 +118,24 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(right_cont, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(right_cont, 0, LV_PART_MAIN);
     lv_obj_clear_flag(right_cont, LV_OBJ_FLAG_SCROLLABLE);  // Non-scrollable
+    
+    adc_oneshot_unit_handle_t adc_handle;
+    battery_init(&adc_handle);
 
-    lv_obj_t *battery_icon = lv_label_create(right_cont);
-    lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_FULL);
-    lv_obj_set_style_text_color(battery_icon, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_center(battery_icon);
+    struct battery_update_data *data = malloc(sizeof(struct battery_update_data));
+    data->adc_handle = adc_handle;
+    // TODO: Adjust what is displayed based on user settings
+    //lv_obj_t *battery_title = create_battery_text(right_cont);
+
+    lv_obj_t *battery_title = create_button_icon(right_cont);
+
+    data->battery_label = battery_title;
+    lv_timer_create(timer_update_battery, 5000, data);
+
+    // lv_obj_t *battery_icon = lv_label_create(right_cont);
+    // lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_FULL);
+    // lv_obj_set_style_text_color(battery_icon, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    // lv_obj_center(battery_icon);
 }
 
 void update_battery_icon(lv_obj_t *battery_icon, int battery_level)
