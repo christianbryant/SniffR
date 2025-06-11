@@ -28,7 +28,7 @@ SniffR adheres to the following principles:
 - **ESP32-C3** — compact, reliable, with integrated battery management  
 - **SCD40** — precise air quality sensor  
 - **4000mAh Battery** — long-lasting portable power  
-- **3.5" Touch Screen** — intuitive user interface  
+- **3.5" Touch Screen (ST7796U)** — intuitive user interface  
 
 ---
 
