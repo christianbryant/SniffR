@@ -1,9 +1,19 @@
 
 #include "lvgl.h"
+#include "lvgl_arc.h"
+#include "scd40.h"
 #include <stdlib.h>
 #include <string.h>
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
 #include "esp_check.h"
+
+struct lv_timer_data {
+    i2c_master_dev_handle_t i2c_handle;
+    lv_obj_t *co2_arc;
+    lv_obj_t *temp_arc;
+    lv_obj_t *humid_arc;
+};
 
 void update_arc_color(lv_obj_t *arc, lv_color_t color)
 {
@@ -11,28 +21,44 @@ void update_arc_color(lv_obj_t *arc, lv_color_t color)
     lv_obj_set_style_arc_color(arc, color, LV_PART_INDICATOR);
 }
 
-void rand_update_co2_arc_value(lv_timer_t *timer)
-{
-    lv_obj_t *arc = (lv_obj_t *) lv_timer_get_user_data(timer);
+void update_arc_values(lv_timer_t *timer){
+    struct lv_timer_data *data = (struct lv_timer_data *) lv_timer_get_user_data(timer);
+    lv_obj_t *co2_arc = data->co2_arc;
+    lv_obj_t *temp_arc = data->temp_arc;
+    lv_obj_t *humid_arc = data->humid_arc;
+    i2c_master_dev_handle_t i2c_handle = data->i2c_handle;
+    uint16_t co2_value = 0;
+    float temp_value = 0.0f;
+    float hum_value = 0.0f;
+    esp_err_t err = scd40_read_measurement(i2c_handle, &co2_value, &temp_value, &hum_value);
+    while (err != ESP_OK) {
+        ESP_LOGE("LVGL", "Failed to read SCD40 measurement: %s", esp_err_to_name(err));
+        err = scd40_read_measurement(i2c_handle, &co2_value, &temp_value, &hum_value);
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Wait before retrying
+    }
+    
+    // Update CO2 arc value
+    rand_update_co2_arc_value(co2_arc, co2_value);
+    // Update Temperature arc value
+    rand_update_temp_arc_value(temp_arc, temp_value);
+    // Update Humidity arc value
+    rand_update_humid_arc_value(humid_arc, hum_value);
+}
 
-    // Randomly update the arc's value
-    int32_t new_value = 500 + rand() % 2300; //` Random value between 500 and 2300
-    lv_arc_set_value(arc, new_value);
-    if(new_value >= 500 && new_value <= 800) {
+void rand_update_co2_arc_value(lv_obj_t *arc, int32_t co2_value)
+{
+    lv_arc_set_value(arc, co2_value);
+    if(co2_value >= 500 && co2_value <= 800) {
         // Set color to green if value is between 500 and 600
-        ESP_LOGI("LVGL", "Updating arc color to green");
         update_arc_color(arc, lv_color_hex(0x00ff00));
-    } else if(new_value > 800 && new_value <= 1200) {
+    } else if(co2_value > 800 && co2_value <= 1200) {
         // Set color to yellow if value is between 600 and 700
-        ESP_LOGI("LVGL", "Updating arc color to yellow");
         update_arc_color(arc, lv_color_hex(0xffff00));
-    } else if (new_value > 1200 && new_value <= 1800) {
+    } else if (co2_value > 1200 && co2_value <= 1800) {
         // Set color to red for values outside the range
-        ESP_LOGI("LVGL", "Updating arc color to orange");
         update_arc_color(arc, lv_color_hex(0xff8000)); // Orange color
     } else {
         // Set color to red for values outside the range
-        ESP_LOGI("LVGL", "Updating arc color to red");
         update_arc_color(arc, lv_color_hex(0xff0000)); // Red color
     }
     
@@ -42,32 +68,25 @@ void rand_update_co2_arc_value(lv_timer_t *timer)
         lv_obj_t *num_label = lv_obj_get_child(cont, 0);
         lv_obj_t *unit_label = lv_obj_get_child(cont, 1);
         if (num_label) {
-            lv_label_set_text_fmt(num_label, "%ld", new_value);
+            lv_label_set_text_fmt(num_label, "%ld", co2_value);
         }
     }
 }
-void rand_update_humid_arc_value(lv_timer_t *timer)
-{
-    lv_obj_t *arc = (lv_obj_t *) lv_timer_get_user_data(timer);
 
-    // Randomly update the arc's value
-    int32_t new_value = 0 + rand() % 100; //` Random value between 500 and 2300
-    lv_arc_set_value(arc, new_value);
-    if(new_value >= 0 && new_value <= 50) {
+void rand_update_humid_arc_value(lv_obj_t *arc, float hum_value)
+{
+    lv_arc_set_value(arc, hum_value);
+    if(hum_value >= 0 && hum_value <= 50) {
         // Set color to green if value is between 500 and 600
-        ESP_LOGI("LVGL", "Updating arc color to green");
         update_arc_color(arc, lv_color_hex(0x00ff00));
-    } else if(new_value > 50 && new_value <= 60) {
+    } else if(hum_value > 50 && hum_value <= 60) {
         // Set color to yellow if value is between 600 and 700
-        ESP_LOGI("LVGL", "Updating arc color to yellow");
         update_arc_color(arc, lv_color_hex(0xffff00));
-    } else if (new_value > 60 && new_value <= 90) {
+    } else if (hum_value > 60 && hum_value <= 90) {
         // Set color to red for values outside the range
-        ESP_LOGI("LVGL", "Updating arc color to orange");
         update_arc_color(arc, lv_color_hex(0xff8000)); // Orange color
     } else {
         // Set color to red for values outside the range
-        ESP_LOGI("LVGL", "Updating arc color to red");
         update_arc_color(arc, lv_color_hex(0xff0000)); // Red color
     }
     
@@ -77,33 +96,25 @@ void rand_update_humid_arc_value(lv_timer_t *timer)
         lv_obj_t *num_label = lv_obj_get_child(cont, 0);
         lv_obj_t *unit_label = lv_obj_get_child(cont, 1);
         if (num_label) {
-            lv_label_set_text_fmt(num_label, "%ld%%", new_value);
+            lv_label_set_text_fmt(num_label, "%d%%", (int)hum_value);
         }
     }
 }
 
-void rand_update_temp_arc_value(lv_timer_t *timer)
+void rand_update_temp_arc_value(lv_obj_t *arc, float temp_value)
 {
-    lv_obj_t *arc = (lv_obj_t *) lv_timer_get_user_data(timer);
-
-    // Randomly update the arc's value
-    int32_t new_value = -50 + rand() % 100; //` Random value between 500 and 2300
-    lv_arc_set_value(arc, new_value);
-    if(new_value >= -50 && new_value <= 0) {
+    lv_arc_set_value(arc, temp_value);
+    if(temp_value >= -50 && temp_value <= 0) {
         // Set color to green if value is between 500 and 600
-        ESP_LOGI("LVGL", "Updating arc color to green");
         update_arc_color(arc, lv_color_hex(0x0000FF));
-    } else if(new_value > 0 && new_value <= 10) {
+    } else if(temp_value > 0 && temp_value <= 10) {
         // Set color to yellow if value is between 600 and 700
-        ESP_LOGI("LVGL", "Updating arc color to yellow");
         update_arc_color(arc, lv_color_hex(0xffff00));
-    } else if (new_value > 10 && new_value <= 20) {
+    } else if (temp_value > 10 && temp_value <= 20) {
         // Set color to red for values outside the range
-        ESP_LOGI("LVGL", "Updating arc color to orange");
         update_arc_color(arc, lv_color_hex(0xff8000)); // Orange color
     } else {
         // Set color to red for values outside the range
-        ESP_LOGI("LVGL", "Updating arc color to red");
         update_arc_color(arc, lv_color_hex(0xff0000)); // Red color
     }
     
@@ -113,12 +124,12 @@ void rand_update_temp_arc_value(lv_timer_t *timer)
         lv_obj_t *num_label = lv_obj_get_child(cont, 0);
         lv_obj_t *unit_label = lv_obj_get_child(cont, 1);
         if (num_label) {
-            lv_label_set_text_fmt(num_label, "%ld°", new_value);
+            lv_label_set_text_fmt(num_label, "%d°", (int)temp_value);
         }
     }
 }
 
-void create_dynamic_co2_arc(lv_obj_t *parent)
+lv_obj_t *create_dynamic_co2_arc(lv_obj_t *parent)
 {
     //set background color
     // lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x11273C), LV_PART_MAIN);
@@ -176,12 +187,11 @@ void create_dynamic_co2_arc(lv_obj_t *parent)
     lv_obj_align(unit_label, LV_ALIGN_CENTER, 0, 20); // "ppm" label
 
 
-    // Create a timer to update the arc's value periodically
-    lv_timer_create(rand_update_co2_arc_value, 1000, arc); // Update every second
+    return arc;
     
 }
 
-void create_dynamic_temp_arc(lv_obj_t *parent)
+lv_obj_t *create_dynamic_temp_arc(lv_obj_t *parent)
 {
     //set background color
     // lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x11273C), LV_PART_MAIN);
@@ -241,12 +251,11 @@ void create_dynamic_temp_arc(lv_obj_t *parent)
     lv_obj_align(unit_label, LV_ALIGN_CENTER, 0, 20); // "ppm" label
 
 
-    // Create a timer to update the arc's value periodically
-    lv_timer_create(rand_update_temp_arc_value, 1000, arc); // Update every second
+    return arc;
     
 }
 
-void create_dynamic_humid_arc(lv_obj_t *parent)
+lv_obj_t *create_dynamic_humid_arc(lv_obj_t *parent)
 {
     //set background color
     // lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x11273C), LV_PART_MAIN);
@@ -305,9 +314,28 @@ void create_dynamic_humid_arc(lv_obj_t *parent)
     lv_obj_align(num_label, LV_ALIGN_CENTER, 0, -10); // Number label
     lv_obj_align(unit_label, LV_ALIGN_CENTER, 0, 20); // "ppm" label
 
-
-    // Create a timer to update the arc's value periodically
-    lv_timer_create(rand_update_humid_arc_value, 1000, arc); // Update every second
+    return arc;
     
+}
+
+void create_arcs(lv_obj_t *parent, i2c_master_dev_handle_t i2c_handle)
+{   
+    lv_obj_t *co2_arc;
+    lv_obj_t *temp_arc;
+    lv_obj_t *hum_arc;
+
+    // Create the arcs
+    co2_arc = create_dynamic_co2_arc(parent);
+    temp_arc = create_dynamic_temp_arc(parent);
+    hum_arc = create_dynamic_humid_arc(parent);
+
+    // Create a timer to update the arcs periodically
+    struct lv_timer_data *data = malloc(sizeof(struct lv_timer_data));
+    data->i2c_handle = i2c_handle;
+    data->co2_arc = co2_arc;
+    data->temp_arc = temp_arc;
+    data->humid_arc = hum_arc;
+
+    lv_timer_create(update_arc_values, 5000, data); // Update every second
 }
 

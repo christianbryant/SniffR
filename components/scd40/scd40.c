@@ -4,6 +4,7 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 // TODO: Update CRC to do the check and error handling
 // Create this as a class in the future
@@ -48,31 +49,8 @@
 //define tag for logging
 static const char *TAG = "SCD40";
 
-esp_err_t scd40_init(i2c_port_t i2c_num, i2c_master_dev_handle_t *i2c_dev, gpio_num_t sda_pin, gpio_num_t scl_pin) {
-    i2c_master_bus_config_t i2c_mst_config = {
-    .clk_source = I2C_CLK_SRC_DEFAULT,
-    .i2c_port = i2c_num,
-    .scl_io_num = scl_pin,
-    .sda_io_num = sda_pin,
-    .glitch_ignore_cnt = 7,
-    .flags.enable_internal_pullup = true,
-    };
-
-    i2c_master_bus_handle_t bus_handle;
-    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
-
-    i2c_device_config_t dev_cfg = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address = 0x62,
-        .scl_speed_hz = 50000,
-    };
-    // Initialize the I2C device
-
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, i2c_dev));
-    if (i2c_dev == NULL || bus_handle == NULL) {
-        ESP_LOGE(TAG, "Failed to add I2C device");
-        return ESP_FAIL;
-    }
+esp_err_t scd40_init(i2c_master_dev_handle_t i2c_dev) {
+    scd40_start_measurement(i2c_dev);
     return ESP_OK;
 }
 
@@ -87,11 +65,14 @@ esp_err_t scd40_deinit(i2c_master_dev_handle_t handle) {
 
 esp_err_t scd40_start_measurement(i2c_master_dev_handle_t handle) {
     uint8_t data[2] = {SCD40_CMD_START_MEASUREMENT >> 8, SCD40_CMD_START_MEASUREMENT & 0xFF};
-    esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    // scd40_send_cmd(data, handle);
+    esp_err_t err;
+    err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to start measurement: %s", esp_err_to_name(err));
         return err;
     }
+
     return ESP_OK;
 }
 
@@ -201,26 +182,30 @@ esp_err_t scd40_read_measurement(i2c_master_dev_handle_t handle, uint16_t *co2, 
         ESP_LOGE(TAG, "I2C transmit failed: %s", esp_err_to_name(err));
         // Take corrective action or exit function
     }
-    //i2c_master_write_to_device(i2c_num, SCD40_I2C_ADDRESS, cmd, sizeof(cmd), 1000 / portTICK_PERIOD_MS);
     vTaskDelay(100 / portTICK_PERIOD_MS); // Wait for the sensor to process the command
     i2c_master_receive(handle, data2, sizeof(data2), 1000 / portTICK_PERIOD_MS);
-    //i2c_master_read_from_device(i2c_num, SCD40_I2C_ADDRESS, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
-    if (data[0] != 0x00) {
-        ESP_LOGE(TAG, "Sensor not ready for measurement");
+    
+    // Combine MSB and LSB
+    uint16_t status = ((uint16_t)data2[0] << 8) | data2[1];
+
+    // Check lower 11 bits
+    if ((status & 0x07FF) == 0) {
+        ESP_LOGW(TAG, "Sensor data not ready");
         return ESP_ERR_NOT_FOUND;
     }
     
     // Send the read measurement command
     i2c_master_transmit(handle, cmd2, sizeof(cmd2), 1000 / portTICK_PERIOD_MS);
-    //i2c_master_write_to_device(i2c_num, SCD40_I2C_ADDRESS, cmd2, sizeof(cmd2), 1000 / portTICK_PERIOD_MS);
 
     // Wait for the measurement to be ready
     vTaskDelay(100 / portTICK_PERIOD_MS); // Adjust delay as necessary for your application
     
     // Read the measurement data
-    i2c_master_receive(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
-    //i2c_master_read_from_device(i2c_num, SCD40_I2C_ADDRESS, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
-    
+    err = i2c_master_receive(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "I2C receive failed: %s", esp_err_to_name(err));
+        return err;
+    }
     // Check CRCs for CO2, temperature, and humidity
     if (crc8(data, 2) != data[2]) {
         ESP_LOGE(TAG, "CO2 CRC check failed");
@@ -245,7 +230,7 @@ esp_err_t scd40_read_measurement(i2c_master_dev_handle_t handle, uint16_t *co2, 
 
     // Humidity is in percentage, calculated from the raw value
     // Formula: RH = 100 * (raw_value / (2^16 - 1)
-    *humidity = 100 * (((data[6] << 8) | data[7])/ ((1 << 16)-1.0f));
+    *humidity = 100.0f * (((data[6] << 8) | data[7])/ ((1 << 16)-1.0f));
     ESP_LOGI(TAG, "CO2: %d ppm, Temperature: %.2f C, Humidity: %.2f %%", *co2, *temperature, *humidity);
     return ESP_OK;
 }

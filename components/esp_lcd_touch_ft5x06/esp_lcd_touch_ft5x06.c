@@ -114,7 +114,7 @@ esp_err_t esp_lcd_touch_new_i2c_ft5x06(const esp_lcd_panel_io_handle_t io, const
     esp_lcd_touch_ft5x06->del = esp_lcd_touch_ft5x06_del;
 
     /* Mutex */
-    esp_lcd_touch_ft5x06->data.lock.owner = portMUX_FREE_VAL;
+    // esp_lcd_touch_ft5x06->data.lock.owner = portMUX_FREE_VAL;
 
     /* Save config */
     memcpy(&esp_lcd_touch_ft5x06->config, config, sizeof(esp_lcd_touch_config_t));

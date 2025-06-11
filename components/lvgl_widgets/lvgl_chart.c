@@ -1,4 +1,5 @@
 #include "lvgl.h"
+#include "lvgl_chart.h"
 #include <stdlib.h>
 #include <string.h>
 

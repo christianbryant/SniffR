@@ -3,6 +3,8 @@
 
 #include "driver/i2c_master.h"
 #include "esp_err.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -11,18 +13,18 @@ extern "C" {
 #endif
 
 // Initialize the SCD40 sensor (I2C master config)
-esp_err_t scd40_init(i2c_port_t i2c_num, i2c_master_dev_handle_t *i2c_dev, gpio_num_t sda_pin, gpio_num_t scl_pin);
+esp_err_t scd40_init(i2c_master_dev_handle_t i2c_dev);
 
 // Deinitialize the SCD40 sensor (remove I2C driver)
-esp_err_t scd40_deinit(i2c_master_dev_handle_t i2c_num);
+esp_err_t scd40_deinit(i2c_master_dev_handle_t handle);
 
 // Sensor control commands
 esp_err_t scd40_start_measurement(i2c_master_dev_handle_t handle);
-esp_err_t scd40_low_power_measurement(i2c_port_t i2c_num);
-esp_err_t scd40_stop_measurement(i2c_port_t i2c_num);
-esp_err_t scd40_reset(i2c_port_t i2c_num);
-esp_err_t scd40_wake_up(i2c_port_t i2c_num);
-esp_err_t scd40_power_down(i2c_port_t i2c_num);
+esp_err_t scd40_low_power_measurement(i2c_master_dev_handle_t handle);
+esp_err_t scd40_stop_measurement(i2c_master_dev_handle_t handle);
+esp_err_t scd40_reset(i2c_master_dev_handle_t handle);
+esp_err_t scd40_wake_up(i2c_master_dev_handle_t handle);
+esp_err_t scd40_power_down(i2c_master_dev_handle_t handle);
 
 // Perform forced recalibration with a target CO2 ppm value
 esp_err_t scd40_force_recalibration(i2c_port_t i2c_num, uint16_t co2_value);

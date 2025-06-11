@@ -4,7 +4,8 @@
 #include <string.h>
 #include "esp_log.h"
 #include "esp_check.h"
-#include "lvgl_arc.c"
+#include "lvgl_arc.h"
+#include "lvgl_home_page.h"
 
 static void settings_btn_event_handler(lv_event_t *e)
 {
@@ -77,7 +78,7 @@ void update_battery_icon(lv_obj_t *battery_icon, int battery_level)
     }
 }
 
-void create_home_page(void)
+void create_home_page(i2c_master_dev_handle_t i2c_handle)
 {
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x11273C), LV_PART_MAIN);
 
@@ -98,7 +99,5 @@ void create_home_page(void)
     lv_obj_set_flex_align(main_content, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_gap(main_content, 0, LV_PART_MAIN);
     // Add the arcs
-    create_dynamic_co2_arc(main_content);
-    create_dynamic_temp_arc(main_content);
-    create_dynamic_humid_arc(main_content);
+    create_arcs(main_content, i2c_handle);
 }
