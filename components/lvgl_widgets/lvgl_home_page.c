@@ -8,6 +8,7 @@
 #include "lvgl_home_page.h"
 #include "battery.h"
 #include "esp_adc/adc_oneshot.h"
+#include "lvgl_settings.h"
 
 struct battery_update_data {
     lv_obj_t *battery_label;
@@ -18,6 +19,8 @@ static void settings_btn_event_handler(lv_event_t *e)
 {
     // event handler logic
     ESP_LOGI("Settings Button", "Settings button clicked");
+    lv_obj_t *current_screen = lv_scr_act();
+    create_settings_menu(current_screen);
 }
 
 void voltage_update_battery(adc_oneshot_unit_handle_t adc_handle, lv_obj_t *battery_label){

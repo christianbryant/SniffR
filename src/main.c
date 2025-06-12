@@ -38,6 +38,8 @@
 
 #include <inttypes.h>
 
+#include "nvs_driver.h"
+
 
 #include "esp_log.h"
 #include "esp_check.h"
@@ -75,6 +77,7 @@ void app_main(void)
     i2c_master_dev_handle_t i2c_touch;
     i2c_master_dev_handle_t i2c_scd40;
     i2c_master_bus_handle_t bus_handle;
+    init_nvs();
     display_hw_init();
     ESP_ERROR_CHECK(i2c_init(I2C_NUM_0, &i2c_scd40,&i2c_touch, &bus_handle, I2C_SDA_GPIO, I2C_SCL_GPIO, I2C_ADDR_SCD40, I2C_ADDR_TOUCH));
     touch_i2c_init(bus_handle);

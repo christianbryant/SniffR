@@ -1,5 +1,6 @@
 set(srcs "lvgl_arc.c"
-         "lvgl_home_page.c")
+         "lvgl_home_page.c"
+         "lvgl_settings.c")
 
 idf_component_register(
     SRCS ${srcs}
