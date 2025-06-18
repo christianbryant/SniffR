@@ -7,9 +7,9 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "esp_check.h"
+#include "i2c_driver.h"
 
 struct lv_timer_data {
-    i2c_master_dev_handle_t i2c_handle;
     lv_obj_t *co2_arc;
     lv_obj_t *temp_arc;
     lv_obj_t *humid_arc;
@@ -26,14 +26,13 @@ void update_arc_values(lv_timer_t *timer){
     lv_obj_t *co2_arc = data->co2_arc;
     lv_obj_t *temp_arc = data->temp_arc;
     lv_obj_t *humid_arc = data->humid_arc;
-    i2c_master_dev_handle_t i2c_handle = data->i2c_handle;
     uint16_t co2_value = 0;
     float temp_value = 0.0f;
     float hum_value = 0.0f;
-    esp_err_t err = scd40_read_measurement(i2c_handle, &co2_value, &temp_value, &hum_value);
+    esp_err_t err = scd40_read_measurement(i2c_scd40, &co2_value, &temp_value, &hum_value);
     while (err != ESP_OK) {
         ESP_LOGE("LVGL", "Failed to read SCD40 measurement: %s", esp_err_to_name(err));
-        err = scd40_read_measurement(i2c_handle, &co2_value, &temp_value, &hum_value);
+        err = scd40_read_measurement(i2c_scd40, &co2_value, &temp_value, &hum_value);
         vTaskDelay(pdMS_TO_TICKS(1000)); // Wait before retrying
     }
     
@@ -318,7 +317,7 @@ lv_obj_t *create_dynamic_humid_arc(lv_obj_t *parent)
     
 }
 
-void create_arcs(lv_obj_t *parent, i2c_master_dev_handle_t i2c_handle)
+void create_arcs(lv_obj_t *parent)
 {   
     lv_obj_t *co2_arc;
     lv_obj_t *temp_arc;
@@ -331,7 +330,6 @@ void create_arcs(lv_obj_t *parent, i2c_master_dev_handle_t i2c_handle)
 
     // Create a timer to update the arcs periodically
     struct lv_timer_data *data = malloc(sizeof(struct lv_timer_data));
-    data->i2c_handle = i2c_handle;
     data->co2_arc = co2_arc;
     data->temp_arc = temp_arc;
     data->humid_arc = hum_arc;

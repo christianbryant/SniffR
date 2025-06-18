@@ -2,6 +2,7 @@
 #include "lvgl_settings.h"
 #include "nvs_driver.h"
 #include "lvgl_home_page.h"
+#include "i2c_driver.h"
 
 int32_t tmp_val;
 static lv_obj_t *saved_prev_screen = NULL;
@@ -40,20 +41,18 @@ static void battery_display_dd_event_cb(lv_event_t *e) {
 }
 // TODO: Fix this function to approperatly return back to main screen
 static void menu_back_btn_event_cb(lv_event_t *e) {
-    lv_event_code_t code = lv_event_get_code(e);
+
     lv_obj_t *menu = lv_event_get_target(e);
+    lv_obj_t *main_m = lv_event_get_user_data(e);
+    lv_obj_del(main_m);
+    lv_scr_load(saved_prev_screen);
 
-    if (code == LV_EVENT_VALUE_CHANGED) {
-        // This will be triggered when root back button is pressed
-        ESP_LOGI("UI", "Back button pressed, returning to home screen");
-
-        // Delete the settings menu
-        lv_obj_del(menu);
-
-        // Show your home screen again (call your home screen init function)
-        //create_home_page(lv_scr_act()); // Replace with your actual home screen function
-        lv_scr_load(saved_prev_screen);
+    // This will be triggered when root back button is pressed
+    ESP_LOGI("UI", "Back button pressed, returning to home screen");
+    if(i2c_scd40 == NULL){
+        ESP_LOGI("UI", "i2c_scd40 == NULL");
     }
+    //create_home_page();
 }
 
 
@@ -118,7 +117,7 @@ void create_settings_menu(lv_obj_t *parent) {
 
         lv_obj_add_event_cb(dd, battery_display_dd_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     }
-    //lv_obj_add_event_cb(menu, menu_back_btn_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(menu, menu_back_btn_event_cb, LV_EVENT_CLICKED, menu);
     // === Set it as root page ===
     lv_menu_set_page(menu, settings_page);
 }

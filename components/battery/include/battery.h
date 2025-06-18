@@ -13,10 +13,12 @@
 extern "C" {
 #endif
 
-esp_err_t get_battery_voltage_mv(adc_oneshot_unit_handle_t adc_handle, int *voltage_mv, float *voltage);
-int get_battery_percentage(adc_oneshot_unit_handle_t adc_handle);
+esp_err_t get_battery_voltage_mv(int *voltage_mv, float *voltage);
+int get_battery_percentage();
 esp_err_t battery_init();
 adc_oneshot_unit_handle_t get_adc_handle();
+
+extern adc_oneshot_unit_handle_t adc_handle;
 
 
 #ifdef __cplusplus

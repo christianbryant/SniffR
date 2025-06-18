@@ -18,6 +18,6 @@ lv_obj_t *create_dynamic_co2_arc(lv_obj_t *parent);
 lv_obj_t *create_dynamic_temp_arc(lv_obj_t *parent);
 lv_obj_t *create_dynamic_humid_arc(lv_obj_t *parent);
 
-void create_arcs(lv_obj_t *parent, i2c_master_dev_handle_t i2c_handle);
+void create_arcs(lv_obj_t *parent);
 
 #endif // LVLG_ARCH_H

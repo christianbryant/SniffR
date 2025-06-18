@@ -7,7 +7,10 @@
 
 
 
-esp_err_t i2c_init(i2c_port_t i2c_num, i2c_master_dev_handle_t *i2c_dev1, i2c_master_dev_handle_t *i2c_dev2, i2c_master_bus_handle_t *bus_handle, gpio_num_t sda_pin, gpio_num_t scl_pin, uint16_t dev_addr1, uint16_t dev_addr2)
+i2c_master_dev_handle_t i2c_scd40 = NULL;
+
+
+esp_err_t i2c_init(i2c_port_t i2c_num, i2c_master_dev_handle_t *i2c_dev2, i2c_master_bus_handle_t *bus_handle, gpio_num_t sda_pin, gpio_num_t scl_pin, uint16_t dev_addr1, uint16_t dev_addr2)
 {
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << GPIO_NUM_6) | (1ULL << GPIO_NUM_7),
@@ -33,8 +36,8 @@ esp_err_t i2c_init(i2c_port_t i2c_num, i2c_master_dev_handle_t *i2c_dev1, i2c_ma
         .device_address = dev_addr1, // Example address
         .scl_speed_hz = 400000,
     };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(*bus_handle, &dev_cfg1, i2c_dev1));
-    if (*i2c_dev1 == NULL || bus_handle == NULL) {
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(*bus_handle, &dev_cfg1, &i2c_scd40));
+    if (i2c_scd40 == NULL || bus_handle == NULL) {
         ESP_LOGE("I2C", "Failed to add I2C device");
         return ESP_FAIL;
     }
