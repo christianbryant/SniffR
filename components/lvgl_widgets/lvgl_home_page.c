@@ -53,7 +53,6 @@ void icon_update_battery(lv_obj_t *battery_icon)
 void timer_update_battery(lv_timer_t *timer){
     struct battery_update_data *data = (struct battery_update_data *) lv_timer_get_user_data(timer);
     lv_obj_t *battery_label = data->battery_label;
-    // TODO: Adjust what is displayed based on user settings
     int32_t battery_ver;
     load_user_setting("battery_ver", &battery_ver, 0);
     switch(battery_ver){
@@ -67,7 +66,6 @@ void timer_update_battery(lv_timer_t *timer){
             icon_update_battery(battery_label);
             break;
     }
-    //percent_update_battery(adc_handle, battery_label);
 }
 
 lv_obj_t *create_battery_text(lv_obj_t *parent){
@@ -135,18 +133,11 @@ void top_bar_create(lv_obj_t *parent)
     battery_init();
 
     struct battery_update_data *data = malloc(sizeof(struct battery_update_data));
-    // TODO: Adjust what is displayed based on user settings
-    //lv_obj_t *battery_title = create_battery_text(right_cont);
 
     lv_obj_t *battery_title = create_button_icon(right_cont);
 
     data->battery_label = battery_title;
     lv_timer_create(timer_update_battery, 5000, data);
-
-    // lv_obj_t *battery_icon = lv_label_create(right_cont);
-    // lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_FULL);
-    // lv_obj_set_style_text_color(battery_icon, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    // lv_obj_center(battery_icon);
 }
 
 void update_battery_icon(lv_obj_t *battery_icon, int battery_level)

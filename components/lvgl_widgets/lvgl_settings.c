@@ -54,7 +54,7 @@ static void menu_back_btn_event_cb(lv_event_t *e) {
 }
 
 
-lv_obj_t *create_slider(lv_obj_t *parent, const char* label_txt, int curr_val, int min_range, int max_range, lv_event_cb_t event_cb, const char* setting_txt){
+lv_obj_t *create_slider(lv_obj_t *parent, const char* label_txt, int curr_val, int min_range, int max_range, lv_event_cb_t event_cb, char* setting_txt){
     lv_obj_t *cont = lv_menu_cont_create(parent);
     lv_obj_t *label = lv_label_create(cont);
     lv_label_set_text(label, label_txt);
@@ -68,7 +68,7 @@ lv_obj_t *create_slider(lv_obj_t *parent, const char* label_txt, int curr_val, i
 }
 
 
-lv_obj_t *create_switch(lv_obj_t *parent, const char* label_txt, bool state, lv_event_cb_t event_cb, const char* setting_txt){
+lv_obj_t *create_switch(lv_obj_t *parent, const char* label_txt, bool state, lv_event_cb_t event_cb, char* setting_txt){
         lv_obj_t *cont = lv_menu_cont_create(parent);
         lv_obj_t *label = lv_label_create(cont);
         lv_label_set_text(label, label_txt);
@@ -81,7 +81,7 @@ lv_obj_t *create_switch(lv_obj_t *parent, const char* label_txt, bool state, lv_
 
 
 
-lv_obj_t *create_dropdown(lv_obj_t *parent, const char* label_txt, const char* drop_vals, int val, lv_event_cb_t event_cb, const char* setting_txt){
+lv_obj_t *create_dropdown(lv_obj_t *parent, const char* label_txt, const char* drop_vals, int val, lv_event_cb_t event_cb, char* setting_txt){
     lv_obj_t *cont = lv_menu_cont_create(parent);
     lv_obj_t *label = lv_label_create(cont);
     lv_label_set_text(label, label_txt);

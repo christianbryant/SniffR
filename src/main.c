@@ -59,18 +59,18 @@
 
 static const char *TAG = "MAIN";
 
-void co2_arc_task(void *pvParameters) {
-    lv_obj_t *scr = (lv_obj_t *)pvParameters;
+// void co2_arc_task(void *pvParameters) {
+//     lv_obj_t *scr = (lv_obj_t *)pvParameters;
 
-    lvgl_port_lock(0);
-    create_dynamic_co2_arc(scr);
-    lvgl_port_unlock();
+//     lvgl_port_lock(0);
+//     create_dynamic_co2_arc(scr);
+//     lvgl_port_unlock();
 
-    while (1) {
-        // Optional: update arc value dynamically
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
+//     while (1) {
+//         // Optional: update arc value dynamically
+//         vTaskDelay(pdMS_TO_TICKS(1000));
+//     }
+// }
 
 // Declare a global mutex for I2C bus
 
