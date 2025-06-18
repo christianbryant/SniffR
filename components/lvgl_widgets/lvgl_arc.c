@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "esp_check.h"
 #include "i2c_driver.h"
+#include "nvs_driver.h"
 #include "float.h"
 
 static const char* TAG = "lvgl_arc";
@@ -73,8 +74,6 @@ void update_arc_value(const arc_config_t *config)
 }
 
 void create_dynamic_arc(lv_obj_t *parent, arc_config_t *config){
-    //set background color
-    // lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x11273C), LV_PART_MAIN);
 
     lv_obj_t *cont1 = lv_obj_create(parent);
     lv_obj_set_size(cont1, 130, 130);
@@ -212,6 +211,7 @@ void create_arcs(lv_obj_t *parent)
     data->temp_arc_config = temp_arc_config;
     data->humid_arc_config = humid_arc_config;
 
-    lv_timer_create(update_all_arcs, 5000, data); // Update every second
+    lv_timer_t *arc_timer = lv_timer_create(update_all_arcs, 5000, data); // Update every second
+    //lv_timer_ready(arc_timer);
 }
 

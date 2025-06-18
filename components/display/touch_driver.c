@@ -11,6 +11,8 @@
 #include "esp_err.h"
 #include "esp_log.h"
 
+#include "nvs_driver.h"
+
 #define TOUCH_INT_GPIO -1 // No interrupt pin used
 #define TOUCH_RST_GPIO GPIO_NUM_21
 #define TOUCH_MAX_POINTS 1
@@ -33,9 +35,13 @@ void lvgl_touchpad_read_cb(lv_indev_t *indev, lv_indev_data_t *data)
     tp->read_data(tp);
     if (tp->get_xy(tp, touch_x, touch_y, strength, &touch_cnt, TOUCH_MAX_POINTS) && touch_cnt > 0) {
         data->state = LV_INDEV_STATE_PRESSED;
-        data->point.x = touch_x[0];      // <-- ADD THIS!
-        data->point.y = touch_y[0];      // <-- ADD THIS!
-        ESP_LOGI(TAG, "Touch detected at (%u, %u %u)", touch_x[0], touch_y[0], touch_cnt);
+        data->point.x = touch_x[0];
+        data->point.y = touch_y[0];
+        int32_t debug;
+        load_user_setting("debug", &debug, 0);
+        if(debug == 1){
+            ESP_LOGI(TAG, "Touch detected at (%u, %u %u)", touch_x[0], touch_y[0], touch_cnt);
+        }
     } else {
         data->state = LV_INDEV_STATE_RELEASED;
     }

@@ -7,6 +7,7 @@
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include "esp_log.h"
+#include "nvs_driver.h"
 
 
 
@@ -101,7 +102,10 @@ esp_err_t get_battery_voltage_mv(int *voltage_mv, float *voltage) {
     } else if (*voltage > 4.2) {
         ESP_LOGW(TAG, "Battery voltage is high: %.2f V", *voltage);
     }
-
-    ESP_LOGI(TAG, "Battery voltage: %d mV", *voltage_mv);
+    int32_t debug;
+    load_user_setting("debug", &debug, 0);
+    if(debug == 1){
+        ESP_LOGI(TAG, "Battery voltage: %d mV", *voltage_mv);
+    }
     return ESP_OK;
 }

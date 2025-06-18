@@ -8,6 +8,7 @@
 
 
 i2c_master_dev_handle_t i2c_scd40 = NULL;
+int i2c_hz = 400000;
 
 
 esp_err_t i2c_init(i2c_port_t i2c_num, i2c_master_dev_handle_t *i2c_dev2, i2c_master_bus_handle_t *bus_handle, gpio_num_t sda_pin, gpio_num_t scl_pin, uint16_t dev_addr1, uint16_t dev_addr2)
@@ -34,7 +35,7 @@ esp_err_t i2c_init(i2c_port_t i2c_num, i2c_master_dev_handle_t *i2c_dev2, i2c_ma
     i2c_device_config_t dev_cfg1 = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address = dev_addr1, // Example address
-        .scl_speed_hz = 400000,
+        .scl_speed_hz = i2c_hz,
     };
     ESP_ERROR_CHECK(i2c_master_bus_add_device(*bus_handle, &dev_cfg1, &i2c_scd40));
     if (i2c_scd40 == NULL || bus_handle == NULL) {
@@ -45,7 +46,7 @@ esp_err_t i2c_init(i2c_port_t i2c_num, i2c_master_dev_handle_t *i2c_dev2, i2c_ma
     i2c_device_config_t dev_cfg2 = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address = dev_addr2, // Example address
-        .scl_speed_hz = 400000,
+        .scl_speed_hz = i2c_hz,
     };
     ESP_ERROR_CHECK(i2c_master_bus_add_device(*bus_handle, &dev_cfg2, i2c_dev2));
 

@@ -6,8 +6,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+#include "nvs_driver.h"
 // TODO: Update CRC to do the check and error handling
-// Create this as a class in the future
 
 
 #define SCD40_I2C_ADDRESS 0x62
@@ -65,7 +65,6 @@ esp_err_t scd40_deinit(i2c_master_dev_handle_t handle) {
 
 esp_err_t scd40_start_measurement(i2c_master_dev_handle_t handle) {
     uint8_t data[2] = {SCD40_CMD_START_MEASUREMENT >> 8, SCD40_CMD_START_MEASUREMENT & 0xFF};
-    // scd40_send_cmd(data, handle);
     esp_err_t err;
     err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
@@ -78,7 +77,6 @@ esp_err_t scd40_start_measurement(i2c_master_dev_handle_t handle) {
 
 esp_err_t scd40_low_power_measurement(i2c_master_dev_handle_t handle) {
     uint8_t data[2] = {SCD40_CMD_START_LOW_POWER_MEASUREMENT >> 8, SCD40_CMD_START_LOW_POWER_MEASUREMENT & 0xFF};
-    //i2c_master_write_to_device(i2c_num, SCD40_I2C_ADDRESS, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "LOW POWER MODE I2C transmit failed: %s", esp_err_to_name(err));
@@ -89,7 +87,6 @@ esp_err_t scd40_low_power_measurement(i2c_master_dev_handle_t handle) {
 
 esp_err_t scd40_stop_measurement(i2c_master_dev_handle_t handle) {
     uint8_t data[2] = {SCD40_CMD_STOP_MEASUREMENT >> 8, SCD40_CMD_STOP_MEASUREMENT & 0xFF};
-    //i2c_master_write_to_device(i2c_num, SCD40_I2C_ADDRESS, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "STOP MEASUREMENT I2C transmit failed: %s", esp_err_to_name(err));
@@ -100,7 +97,6 @@ esp_err_t scd40_stop_measurement(i2c_master_dev_handle_t handle) {
 
 esp_err_t scd40_reset(i2c_master_dev_handle_t handle) {
     uint8_t data[2] = {SCD40_CMD_RESET >> 8, SCD40_CMD_RESET & 0xFF};
-    //i2c_master_write_to_device(i2c_num, SCD40_I2C_ADDRESS, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "RESET I2C transmit failed: %s", esp_err_to_name(err));
@@ -122,7 +118,6 @@ esp_err_t scd40_wake_up(i2c_master_dev_handle_t handle) {
 
 esp_err_t scd40_power_down(i2c_master_dev_handle_t handle) {
     uint8_t data[2] = {SCD40_CMD_POWER_DOWN >> 8, SCD40_CMD_POWER_DOWN & 0xFF};
-    //i2c_master_write_to_device(i2c_num, SCD40_I2C_ADDRESS, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "POWER DOWN I2C transmit failed: %s", esp_err_to_name(err));
@@ -231,7 +226,11 @@ esp_err_t scd40_read_measurement(i2c_master_dev_handle_t handle, uint16_t *co2, 
     // Humidity is in percentage, calculated from the raw value
     // Formula: RH = 100 * (raw_value / (2^16 - 1)
     *humidity = 100.0f * (((data[6] << 8) | data[7])/ ((1 << 16)-1.0f));
-    ESP_LOGI(TAG, "CO2: %d ppm, Temperature: %.2f C, Humidity: %.2f %%", *co2, *temperature, *humidity);
+    int32_t debug;
+    load_user_setting("debug", &debug, 0);
+    if(debug == 1){
+        ESP_LOGI(TAG, "CO2: %d ppm, Temperature: %.2f C, Humidity: %.2f %%", *co2, *temperature, *humidity);
+    }
     return ESP_OK;
 }
 

@@ -7,14 +7,20 @@
 int32_t tmp_val;
 static lv_obj_t *saved_prev_screen = NULL;
 
+static const char* TAG = "lvgl_settings";
+
 static void switch_event_cb(lv_event_t *e){
     if (lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) {
         lv_obj_t *sw = lv_event_get_target(e);
         const char* setting_txt = lv_event_get_user_data(e);
         bool state = lv_obj_has_state(sw, LV_STATE_CHECKED);
         int32_t val = state ? 1 : 0;
-        ESP_LOGI("UI", "%s: %s", setting_txt, state ? "ON" : "OFF");
         save_user_setting(setting_txt, val);  // Save to NVS
+        int32_t debug;
+        load_user_setting("debug", &debug, 0);
+        if(debug == 1){
+            ESP_LOGI(TAG, "%s: %s", setting_txt, state ? "ON" : "OFF");
+        }
     }
 }
 
@@ -24,8 +30,12 @@ static void dd_event_cb(lv_event_t *e){
         const char* setting_txt = lv_event_get_user_data(e);
         uint16_t selected = lv_dropdown_get_selected(dd);
         int32_t val = (int32_t)selected;
-        ESP_LOGI("UI", "%s: %d", setting_txt, selected);
         save_user_setting(setting_txt, val);  // Save to NVS
+        int32_t debug;
+        load_user_setting("debug", &debug, 0);
+        if(debug == 1){
+            ESP_LOGI(TAG, "%s: %d", setting_txt, selected);
+        }
     }
 }
 
@@ -35,8 +45,12 @@ static void slider_event_cb(lv_event_t *e){
         const char* setting_txt = lv_event_get_user_data(e);
         int val = lv_slider_get_value(slider);
         // Update setting here
-        ESP_LOGI("UI", "%s: %d", setting_txt, val);
         save_user_setting(setting_txt, (int32_t)val); // Save to NVS
+        int32_t debug;
+        load_user_setting("debug", &debug, 0);
+        if(debug == 1){
+            ESP_LOGI(TAG, "%s: %d", setting_txt, val);
+        }
     }
 }
 
@@ -49,7 +63,11 @@ static void menu_back_btn_event_cb(lv_event_t *e) {
         lv_scr_load(saved_prev_screen);
 
         // This will be triggered when root back button is pressed
-        ESP_LOGI("UI", "Back button pressed, returning to home screen");
+        int32_t debug;
+        load_user_setting("debug", &debug, 0);
+        if(debug == 1){
+            ESP_LOGI(TAG, "Back button pressed, returning to home screen");
+        }
     }
 }
 
@@ -104,6 +122,10 @@ void create_settings_menu(lv_obj_t *parent) {
     lv_scr_load(menu);
     lv_obj_set_size(menu, lv_pct(100), lv_pct(100));
     lv_menu_set_mode_root_back_button(menu, true);
+    // Get the back button object
+    lv_obj_t *back_btn = lv_menu_get_main_header_back_button(menu);
+
+    lv_obj_set_ext_click_area(back_btn, 60);
 
 
     // === Create a settings container page ===
@@ -125,7 +147,7 @@ void create_settings_menu(lv_obj_t *parent) {
     lv_obj_t * debug_mode_switch = create_switch(settings_page, "Debug Mode", debug_mode, switch_event_cb, "debug");
     lv_obj_t * battery_display_dd = create_dropdown(settings_page, "Battery Display", battery_drop, battery_ver, dd_event_cb, "battery_ver");
 
-    lv_obj_add_event_cb(lv_menu_get_main_header_back_button(menu), menu_back_btn_event_cb, LV_EVENT_CLICKED, menu);
+    lv_obj_add_event_cb(back_btn, menu_back_btn_event_cb, LV_EVENT_CLICKED, menu);
     // === Set it as root page ===
     lv_menu_set_page(menu, settings_page);
 }

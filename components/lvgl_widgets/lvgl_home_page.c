@@ -15,10 +15,17 @@ struct battery_update_data {
     lv_obj_t *battery_label;
 };
 
+static const char* TAG = "lvgl_home_page";
+
 static void settings_btn_event_handler(lv_event_t *e)
 {
     // event handler logic
-    ESP_LOGI("Settings Button", "Settings button clicked");
+
+    int32_t debug;
+    load_user_setting("debug", &debug, 0);
+    if(debug == 1){
+        ESP_LOGI(TAG, "Settings button clicked");
+    }
     lv_obj_t *current_screen = lv_scr_act();
     create_settings_menu(current_screen);
 }
@@ -114,6 +121,7 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_set_style_text_color(settings_label, lv_color_hex(0x11273C), LV_PART_MAIN);
     lv_obj_center(settings_label);
     lv_obj_move_foreground(settings_btn);
+    lv_obj_set_ext_click_area(settings_btn, 80);
     lv_obj_add_event_cb(settings_btn, settings_btn_event_handler, LV_EVENT_PRESSED, NULL);
 
     // Center label
@@ -137,7 +145,8 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_t *battery_title = create_button_icon(right_cont);
 
     data->battery_label = battery_title;
-    lv_timer_create(timer_update_battery, 5000, data);
+    lv_timer_t * bat_timer = lv_timer_create(timer_update_battery, 5000, data);
+    lv_timer_ready(bat_timer);
 }
 
 void update_battery_icon(lv_obj_t *battery_icon, int battery_level)
