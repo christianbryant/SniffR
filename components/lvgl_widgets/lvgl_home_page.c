@@ -6,11 +6,90 @@
 #include "esp_check.h"
 #include "lvgl_arc.h"
 #include "lvgl_home_page.h"
+#include "battery.h"
+#include "esp_adc/adc_oneshot.h"
+#include "lvgl_settings.h"
+#include "nvs_driver.h"
+
+struct battery_update_data {
+    lv_obj_t *battery_label;
+};
+
+static const char* TAG = "lvgl_home_page";
 
 static void settings_btn_event_handler(lv_event_t *e)
 {
     // event handler logic
-    ESP_LOGI("Settings Button", "Settings button clicked");
+
+    int32_t debug;
+    load_user_setting("debug", &debug, 0);
+    if(debug == 1){
+        ESP_LOGI(TAG, "Settings button clicked");
+    }
+    lv_obj_t *current_screen = lv_scr_act();
+    create_settings_menu(current_screen);
+}
+
+void voltage_update_battery(lv_obj_t *battery_label){
+    int battery_mv;
+    float battery_v;
+    get_battery_voltage_mv(&battery_mv, &battery_v);
+    lv_label_set_text_fmt(battery_label, "%.2f", battery_v);
+}
+
+void percent_update_battery(lv_obj_t *battery_label){
+    int battery_percent = get_battery_percentage();
+    lv_label_set_text_fmt(battery_label, "%d%%", battery_percent);
+}
+
+void icon_update_battery(lv_obj_t *battery_icon)
+{
+    int battery_level = get_battery_percentage();
+    // Update the battery icon based on the battery level
+    if (battery_level > 75) {
+        lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_FULL);
+    } else if (battery_level > 50) {
+        lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_3);
+    } else if (battery_level > 25) {
+        lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_2);
+    } else {
+        lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_EMPTY);
+    }
+}
+
+void timer_update_battery(lv_timer_t *timer){
+    struct battery_update_data *data = (struct battery_update_data *) lv_timer_get_user_data(timer);
+    lv_obj_t *battery_label = data->battery_label;
+    int32_t battery_ver;
+    load_user_setting("battery_ver", &battery_ver, 0);
+    switch(battery_ver){
+        case 0:
+            voltage_update_battery(battery_label);
+            break;
+        case 1:
+            percent_update_battery(battery_label);
+            break;
+        case 2:
+            icon_update_battery(battery_label);
+            break;
+    }
+}
+
+lv_obj_t *create_battery_text(lv_obj_t *parent){
+    lv_obj_t *title_label = lv_label_create(parent);
+    lv_label_set_text_fmt(title_label, "%.2f", 0.00f);
+    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_18, LV_PART_MAIN);
+    lv_obj_set_style_text_color(title_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_center(title_label);
+    return title_label;
+}
+
+lv_obj_t *create_button_icon(lv_obj_t *parent){
+    lv_obj_t *battery_icon = lv_label_create(parent);
+    lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_FULL);
+    lv_obj_set_style_text_color(battery_icon, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_center(battery_icon);
+    return battery_icon;
 }
 
 void top_bar_create(lv_obj_t *parent)
@@ -42,6 +121,7 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_set_style_text_color(settings_label, lv_color_hex(0x11273C), LV_PART_MAIN);
     lv_obj_center(settings_label);
     lv_obj_move_foreground(settings_btn);
+    lv_obj_set_ext_click_area(settings_btn, 80);
     lv_obj_add_event_cb(settings_btn, settings_btn_event_handler, LV_EVENT_PRESSED, NULL);
 
     // Center label
@@ -57,11 +137,16 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(right_cont, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(right_cont, 0, LV_PART_MAIN);
     lv_obj_clear_flag(right_cont, LV_OBJ_FLAG_SCROLLABLE);  // Non-scrollable
+    
+    battery_init();
 
-    lv_obj_t *battery_icon = lv_label_create(right_cont);
-    lv_label_set_text(battery_icon, LV_SYMBOL_BATTERY_FULL);
-    lv_obj_set_style_text_color(battery_icon, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_center(battery_icon);
+    struct battery_update_data *data = malloc(sizeof(struct battery_update_data));
+
+    lv_obj_t *battery_title = create_button_icon(right_cont);
+
+    data->battery_label = battery_title;
+    lv_timer_t * bat_timer = lv_timer_create(timer_update_battery, 5000, data);
+    lv_timer_ready(bat_timer);
 }
 
 void update_battery_icon(lv_obj_t *battery_icon, int battery_level)
@@ -78,10 +163,9 @@ void update_battery_icon(lv_obj_t *battery_icon, int battery_level)
     }
 }
 
-void create_home_page(i2c_master_dev_handle_t i2c_handle)
+void create_home_page()
 {
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x11273C), LV_PART_MAIN);
-
     // Create the top bar
     top_bar_create(lv_scr_act());
 
@@ -99,5 +183,5 @@ void create_home_page(i2c_master_dev_handle_t i2c_handle)
     lv_obj_set_flex_align(main_content, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_gap(main_content, 0, LV_PART_MAIN);
     // Add the arcs
-    create_arcs(main_content, i2c_handle);
+    create_arcs(main_content);
 }

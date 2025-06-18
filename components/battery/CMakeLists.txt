@@ -1,4 +1,4 @@
-set(srcs "scd40.c")
+set(srcs "battery.c")
 
 idf_component_register(
     SRCS ${srcs}

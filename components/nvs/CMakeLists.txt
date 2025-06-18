@@ -1,8 +1,7 @@
-set(srcs "scd40.c")
+set(srcs "nvs_driver.c")
 
 idf_component_register(
     SRCS ${srcs}
     INCLUDE_DIRS "include"
-    REQUIRES driver
-    REQUIRES esp_adc
+    REQUIRES driver nvs_flash 
 )
