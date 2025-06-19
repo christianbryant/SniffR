@@ -13,27 +13,27 @@ extern "C" {
 #endif
 
 // Initialize the SCD40 sensor (I2C master config)
-esp_err_t scd40_init(i2c_master_dev_handle_t i2c_dev);
+esp_err_t scd40_init();
 
 // Deinitialize the SCD40 sensor (remove I2C driver)
-esp_err_t scd40_deinit(i2c_master_dev_handle_t handle);
+esp_err_t scd40_deinit();
 
 // Sensor control commands
-esp_err_t scd40_start_measurement(i2c_master_dev_handle_t handle);
-esp_err_t scd40_low_power_measurement(i2c_master_dev_handle_t handle);
-esp_err_t scd40_stop_measurement(i2c_master_dev_handle_t handle);
-esp_err_t scd40_reset(i2c_master_dev_handle_t handle);
-esp_err_t scd40_wake_up(i2c_master_dev_handle_t handle);
-esp_err_t scd40_power_down(i2c_master_dev_handle_t handle);
+esp_err_t scd40_start_measurement();
+esp_err_t scd40_low_power_measurement();
+esp_err_t scd40_stop_measurement();
+esp_err_t scd40_reset();
+esp_err_t scd40_wake_up();
+esp_err_t scd40_power_down();
 
 // Perform forced recalibration with a target CO2 ppm value
-esp_err_t scd40_force_recalibration(i2c_port_t i2c_num, uint16_t co2_value);
+esp_err_t scd40_force_recalibration(uint16_t co2_value);
 
 // Read the latest measurement: CO2 ppm, temperature (°C), humidity (%RH)
-esp_err_t scd40_read_measurement(i2c_master_dev_handle_t handle, uint16_t *co2, float *temperature, float *humidity);
+esp_err_t scd40_read_measurement(uint16_t *co2, float *temperature, float *humidity);
 
 // Log sensor type and serial number (for debugging)
-void scd40_log_sensor_type(i2c_port_t i2c_num);
+void scd40_log_sensor_type();
 
 // CRC8 function for data integrity checks (polynomial 0x31)
 uint8_t crc8(const uint8_t *data, size_t len);
