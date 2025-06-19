@@ -47,6 +47,9 @@ static void dd_event_cb(lv_event_t *e){
         uint16_t selected = lv_dropdown_get_selected(dd);
         int32_t val = (int32_t)selected;
         save_user_setting(setting_txt, val);  // Save to NVS
+        if(strcmp(setting_txt, "battery_ver") == 0){
+            lv_timer_ready(bat_timer);
+        }
         int32_t debug;
         load_user_setting("debug", &debug, 0);
         if(debug == 1){
@@ -132,6 +135,30 @@ lv_obj_t *create_dropdown(lv_obj_t *parent, const char* label_txt, const char* d
 
 }
 
+// void create_back_button(lv_obj_t *parent){
+
+//     // lv_obj_set_size(parent, 20, 20);
+//     // lv_obj_t *left_cont = lv_obj_create(parent);
+//     // lv_obj_set_size(left_cont, 30, 20);
+//     // lv_obj_set_style_bg_opa(left_cont, LV_OPA_TRANSP, LV_PART_MAIN);
+//     // lv_obj_set_style_border_width(left_cont, 0, LV_PART_MAIN);
+//     // lv_obj_clear_flag(left_cont, LV_OBJ_FLAG_SCROLLABLE);  // Non-scrollable
+    
+//     // lv_obj_t *bck_btn = lv_btn_create(left_cont);
+//     // lv_obj_set_size(bck_btn, 20, 20);
+//     // lv_obj_center(bck_btn);
+//     // lv_obj_set_style_bg_color(bck_btn, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+//     // lv_obj_t *settings_label = lv_label_create(bck_btn);
+//     // lv_label_set_text(settings_label, LV_SYMBOL_LEFT);
+//     // lv_obj_set_style_text_color(settings_label, lv_color_hex(0x11273C), LV_PART_MAIN);
+//     // lv_obj_center(settings_label);
+//     // lv_obj_move_foreground(bck_btn);
+//     // lv_obj_set_ext_click_area(bck_btn, 120);
+    
+//     // return bck_btn;
+
+// }
+
 
 
 void create_settings_menu(lv_obj_t *parent) {
@@ -142,15 +169,15 @@ void create_settings_menu(lv_obj_t *parent) {
     lv_obj_set_size(menu, lv_pct(100), lv_pct(100));
     lv_menu_set_mode_root_back_button(menu, true);
     // Get the back button object
+    lv_obj_t* menu_header = lv_menu_get_main_header(menu);
+    lv_obj_align(lv_obj_get_child(menu_header,0), LV_ALIGN_LEFT_MID, 0,  0);
+    lv_obj_set_flex_align(menu_header, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_t *back_btn = lv_menu_get_main_header_back_button(menu);
-
+    lv_obj_set_content_width(back_btn, 20);
+    lv_obj_set_content_height(back_btn, 40);
+    lv_obj_set_style_pad_gap(menu_header, 100, 0);
+    lv_obj_set_flex_align(back_btn, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_set_ext_click_area(back_btn, 175);
-    lv_area_t click_area;
-    lv_obj_get_click_area(back_btn, &click_area);
-    int32_t width = (click_area.x2 > click_area.x1) ? (click_area.x2 - click_area.x1) : (click_area.x1 - click_area.x2);
-    int32_t height = (click_area.y2 > click_area.y1) ? (click_area.y2 - click_area.y1) : (click_area.y1 - click_area.y2);
-    int32_t area = width * height;
-    ESP_LOGI(TAG, "Clickable area of back button: %ld");
 
 
     // === Create a settings container page ===

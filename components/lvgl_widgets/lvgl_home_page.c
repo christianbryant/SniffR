@@ -17,6 +17,8 @@ typedef struct {
 
 static const char* TAG = "lvgl_home_page";
 
+lv_timer_t * bat_timer = NULL;
+
 static void settings_btn_event_handler(lv_event_t *e)
 {
     // event handler logic
@@ -130,7 +132,7 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_center(settings_label);
     lv_obj_move_foreground(settings_btn);
     lv_obj_set_ext_click_area(settings_btn, 120);
-    lv_obj_add_event_cb(settings_btn, settings_btn_event_handler, LV_EVENT_PRESSED, NULL);
+    lv_obj_add_event_cb(settings_btn, settings_btn_event_handler, LV_EVENT_CLICKED, NULL);
 
     // Center label
     lv_obj_t *title_label = lv_label_create(top_bar);
@@ -153,7 +155,7 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_t *battery_title = create_button_icon(right_cont);
 
     data->battery_label = battery_title;
-    lv_timer_t * bat_timer = lv_timer_create(timer_update_battery, 5000, data);
+    bat_timer = lv_timer_create(timer_update_battery, 5000, data);
     lv_timer_ready(bat_timer);
 }
 
