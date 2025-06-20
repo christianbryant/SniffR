@@ -135,32 +135,6 @@ lv_obj_t *create_dropdown(lv_obj_t *parent, const char* label_txt, const char* d
 
 }
 
-// void create_back_button(lv_obj_t *parent){
-
-//     // lv_obj_set_size(parent, 20, 20);
-//     // lv_obj_t *left_cont = lv_obj_create(parent);
-//     // lv_obj_set_size(left_cont, 30, 20);
-//     // lv_obj_set_style_bg_opa(left_cont, LV_OPA_TRANSP, LV_PART_MAIN);
-//     // lv_obj_set_style_border_width(left_cont, 0, LV_PART_MAIN);
-//     // lv_obj_clear_flag(left_cont, LV_OBJ_FLAG_SCROLLABLE);  // Non-scrollable
-    
-//     // lv_obj_t *bck_btn = lv_btn_create(left_cont);
-//     // lv_obj_set_size(bck_btn, 20, 20);
-//     // lv_obj_center(bck_btn);
-//     // lv_obj_set_style_bg_color(bck_btn, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-//     // lv_obj_t *settings_label = lv_label_create(bck_btn);
-//     // lv_label_set_text(settings_label, LV_SYMBOL_LEFT);
-//     // lv_obj_set_style_text_color(settings_label, lv_color_hex(0x11273C), LV_PART_MAIN);
-//     // lv_obj_center(settings_label);
-//     // lv_obj_move_foreground(bck_btn);
-//     // lv_obj_set_ext_click_area(bck_btn, 120);
-    
-//     // return bck_btn;
-
-// }
-
-
-
 void create_settings_menu(lv_obj_t *parent) {
     // Create a menu
     saved_prev_screen = parent;

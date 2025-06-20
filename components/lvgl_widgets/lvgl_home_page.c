@@ -119,8 +119,6 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(left_cont, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(left_cont, 0, LV_PART_MAIN);
     lv_obj_clear_flag(left_cont, LV_OBJ_FLAG_SCROLLABLE);  // Non-scrollable
-    // lv_obj_set_ext_click_area(left_cont, 120);
-    // lv_obj_add_event_cb(left_cont, settings_btn_event_handler, LV_EVENT_CLICKED, NULL);
 
     lv_obj_t *settings_btn = lv_btn_create(left_cont);
     lv_obj_set_size(settings_btn, 40, 40);
@@ -175,12 +173,6 @@ void update_battery_icon(lv_obj_t *battery_icon, int battery_level)
 
 lv_obj_t *create_loading_subpage(lv_obj_t *parent)
 {
-    // lv_obj_t *spinner_cont = lv_obj_create(parent);
-    // lv_obj_set_size(spinner_cont, 200, 200);
-    // lv_obj_center(spinner_cont);
-    // lv_obj_set_style_bg_opa(spinner_cont, LV_OPA_TRANSP, LV_PART_MAIN);
-    // lv_obj_set_style_border_width(spinner_cont, 0, LV_PART_MAIN);
-
     lv_obj_t *spinner = lv_spinner_create(parent);
     lv_obj_set_size(spinner, 100, 100);
     lv_obj_center(spinner);
@@ -208,7 +200,7 @@ void create_home_page()
     uint32_t start = lv_tick_get();
 
     while (lv_tick_elaps(start) < wait_time) {
-        lv_timer_handler(); // allow LVGL to run and draw
+        lv_timer_handler(); // allows LVGL to run and draw
         vTaskDelay(pdMS_TO_TICKS(10));
     }
     lv_obj_del(spinner);
