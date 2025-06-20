@@ -11,16 +11,17 @@
 #include "lvgl_settings.h"
 #include "nvs_driver.h"
 
-struct battery_update_data {
+typedef struct {
     lv_obj_t *battery_label;
-};
+}battery_update_data;
 
 static const char* TAG = "lvgl_home_page";
+
+lv_timer_t * bat_timer = NULL;
 
 static void settings_btn_event_handler(lv_event_t *e)
 {
     // event handler logic
-
     int32_t debug;
     load_user_setting("debug", &debug, 0);
     if(debug == 1){
@@ -58,7 +59,7 @@ void icon_update_battery(lv_obj_t *battery_icon)
 }
 
 void timer_update_battery(lv_timer_t *timer){
-    struct battery_update_data *data = (struct battery_update_data *) lv_timer_get_user_data(timer);
+    battery_update_data *data = (battery_update_data *) lv_timer_get_user_data(timer);
     lv_obj_t *battery_label = data->battery_label;
     int32_t battery_ver;
     load_user_setting("battery_ver", &battery_ver, 0);
@@ -72,6 +73,13 @@ void timer_update_battery(lv_timer_t *timer){
         case 2:
             icon_update_battery(battery_label);
             break;
+    }
+    int32_t low_power = 0;
+    load_user_setting("low_power", &low_power, 0);
+    if(low_power == 1){
+        lv_obj_set_style_text_color(battery_label, lv_color_hex(0xfc7b03), LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_text_color(battery_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     }
 }
 
@@ -121,8 +129,8 @@ void top_bar_create(lv_obj_t *parent)
     lv_obj_set_style_text_color(settings_label, lv_color_hex(0x11273C), LV_PART_MAIN);
     lv_obj_center(settings_label);
     lv_obj_move_foreground(settings_btn);
-    lv_obj_set_ext_click_area(settings_btn, 80);
-    lv_obj_add_event_cb(settings_btn, settings_btn_event_handler, LV_EVENT_PRESSED, NULL);
+    lv_obj_set_ext_click_area(settings_btn, 120);
+    lv_obj_add_event_cb(settings_btn, settings_btn_event_handler, LV_EVENT_CLICKED, NULL);
 
     // Center label
     lv_obj_t *title_label = lv_label_create(top_bar);
@@ -140,12 +148,12 @@ void top_bar_create(lv_obj_t *parent)
     
     battery_init();
 
-    struct battery_update_data *data = malloc(sizeof(struct battery_update_data));
+    battery_update_data *data = malloc(sizeof(battery_update_data));
 
     lv_obj_t *battery_title = create_button_icon(right_cont);
 
     data->battery_label = battery_title;
-    lv_timer_t * bat_timer = lv_timer_create(timer_update_battery, 5000, data);
+    bat_timer = lv_timer_create(timer_update_battery, 5000, data);
     lv_timer_ready(bat_timer);
 }
 
@@ -163,6 +171,16 @@ void update_battery_icon(lv_obj_t *battery_icon, int battery_level)
     }
 }
 
+lv_obj_t *create_loading_subpage(lv_obj_t *parent)
+{
+    lv_obj_t *spinner = lv_spinner_create(parent);
+    lv_obj_set_size(spinner, 100, 100);
+    lv_obj_center(spinner);
+    lv_spinner_set_anim_params(spinner, 2000, 200);
+
+    return spinner;
+}
+
 void create_home_page()
 {
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x11273C), LV_PART_MAIN);
@@ -177,11 +195,22 @@ void create_home_page()
     lv_obj_set_style_border_width(main_content, 0, LV_PART_MAIN);
     lv_obj_align(main_content, LV_ALIGN_TOP_MID, 0, 40);
 
+    lv_obj_t *spinner = create_loading_subpage(main_content);
+    uint32_t wait_time = 5000; // milliseconds
+    uint32_t start = lv_tick_get();
+
+    while (lv_tick_elaps(start) < wait_time) {
+        lv_timer_handler(); // allows LVGL to run and draw
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    lv_obj_del(spinner);
+
     // Use Flex layout to stack arcs vertically
     lv_obj_set_layout(main_content, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(main_content, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(main_content, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_gap(main_content, 0, LV_PART_MAIN);
+
     // Add the arcs
     create_arcs(main_content);
 }

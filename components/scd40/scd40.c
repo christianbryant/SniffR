@@ -5,6 +5,7 @@
 #include "esp_err.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "i2c_driver.h"
 
 #include "nvs_driver.h"
 // TODO: Update CRC to do the check and error handling
@@ -46,27 +47,33 @@
 #define SCD40_CMD_START_LOW_POWER_MEASUREMENT 0x21AC
 #define SCD40_CMD_STOP_LOW_POWER_MEASUREMENT 0x3F86
 
+
 //define tag for logging
 static const char *TAG = "SCD40";
 
-esp_err_t scd40_init(i2c_master_dev_handle_t i2c_dev) {
-    scd40_start_measurement(i2c_dev);
+esp_err_t scd40_init() {
+    if(i2c_scd40 == NULL){
+        ESP_LOGE(TAG, "I2C for SCD40 not initialized!");
+        return ESP_ERR_INVALID_STATE;
+    }
+    scd40_start_measurement();
     return ESP_OK;
 }
 
 
 
-esp_err_t scd40_deinit(i2c_master_dev_handle_t handle) {
+esp_err_t scd40_deinit() {
     // Deinitialize the I2C bus
-    ESP_ERROR_CHECK(i2c_master_bus_rm_device(handle));
+    ESP_ERROR_CHECK(i2c_master_bus_rm_device(i2c_scd40));
+    i2c_scd40 = NULL;
 
     return ESP_OK;
 }
 
-esp_err_t scd40_start_measurement(i2c_master_dev_handle_t handle) {
+esp_err_t scd40_start_measurement() {
     uint8_t data[2] = {SCD40_CMD_START_MEASUREMENT >> 8, SCD40_CMD_START_MEASUREMENT & 0xFF};
     esp_err_t err;
-    err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    err = i2c_master_transmit(i2c_scd40, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to start measurement: %s", esp_err_to_name(err));
         return err;
@@ -75,53 +82,52 @@ esp_err_t scd40_start_measurement(i2c_master_dev_handle_t handle) {
     return ESP_OK;
 }
 
-esp_err_t scd40_low_power_measurement(i2c_master_dev_handle_t handle) {
+esp_err_t scd40_low_power_measurement() {
     uint8_t data[2] = {SCD40_CMD_START_LOW_POWER_MEASUREMENT >> 8, SCD40_CMD_START_LOW_POWER_MEASUREMENT & 0xFF};
-    esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    esp_err_t err = i2c_master_transmit(i2c_scd40, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "LOW POWER MODE I2C transmit failed: %s", esp_err_to_name(err));
-        // Take corrective action or exit function
+        return err;
     }
     return ESP_OK;
 }
 
-esp_err_t scd40_stop_measurement(i2c_master_dev_handle_t handle) {
+esp_err_t scd40_stop_measurement() {
     uint8_t data[2] = {SCD40_CMD_STOP_MEASUREMENT >> 8, SCD40_CMD_STOP_MEASUREMENT & 0xFF};
-    esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    esp_err_t err = i2c_master_transmit(i2c_scd40, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "STOP MEASUREMENT I2C transmit failed: %s", esp_err_to_name(err));
-        // Take corrective action or exit function
+        return err;
     }
     return ESP_OK;
 }
 
-esp_err_t scd40_reset(i2c_master_dev_handle_t handle) {
+esp_err_t scd40_reset() {
     uint8_t data[2] = {SCD40_CMD_RESET >> 8, SCD40_CMD_RESET & 0xFF};
-    esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    esp_err_t err = i2c_master_transmit(i2c_scd40, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "RESET I2C transmit failed: %s", esp_err_to_name(err));
-        // Take corrective action or exit function
+        return err;
     }
     return ESP_OK;
 }
 
-esp_err_t scd40_wake_up(i2c_master_dev_handle_t handle) {
+esp_err_t scd40_wake_up() {
     uint8_t data[2] = {SCD40_CMD_WAKE_UP >> 8, SCD40_CMD_WAKE_UP & 0xFF};
-    //i2c_master_write_to_device(i2c_num, SCD40_I2C_ADDRESS, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
-    esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    esp_err_t err = i2c_master_transmit(i2c_scd40, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "WAKE UP I2C transmit failed: %s", esp_err_to_name(err));
-        // Take corrective action or exit function
+        return err;
     }
     return ESP_OK;
 }
 
-esp_err_t scd40_power_down(i2c_master_dev_handle_t handle) {
+esp_err_t scd40_power_down() {
     uint8_t data[2] = {SCD40_CMD_POWER_DOWN >> 8, SCD40_CMD_POWER_DOWN & 0xFF};
-    esp_err_t err = i2c_master_transmit(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    esp_err_t err = i2c_master_transmit(i2c_scd40, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "POWER DOWN I2C transmit failed: %s", esp_err_to_name(err));
-        // Take corrective action or exit function
+        return err;
     }
     return ESP_OK;
 }
@@ -138,47 +144,52 @@ uint8_t crc8(const uint8_t *data, size_t len) {
     return crc;
 }
 
- esp_err_t scd40_force_recalibration(i2c_port_t i2c_num, uint16_t co2_value) {
-//     uint8_t data[4];
-//     data[0] = SCD40_CMD_SET_FORCED_RECALIBRATION >> 8;
-//     data[1] = SCD40_CMD_SET_FORCED_RECALIBRATION & 0xFF;
-//     data[2] = (co2_value >> 8) & 0xFF; // MSB
-//     data[3] = co2_value & 0xFF; // LSB
-//     data[4] = crc8(data + 3, 2); // CRC for the data
-//     i2c_master_write_to_device(i2c_num, SCD40_I2C_ADDRESS, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
-//     vTaskDelay(400 / portTICK_PERIOD_MS); // Wait for the sensor to process the command
-//     uint8_t response[3];
-//     i2c_master_read_from_device(i2c_num, SCD40_I2C_ADDRESS, response, sizeof(response), 1000 / portTICK_PERIOD_MS);
-//     // crc check
-//     if (crc8(response + 3, 2) != response[2]) {
-//         ESP_LOGE(TAG, "Forced recalibration CRC check failed");
-//         return ESP_FAIL;
-//     }
-//     if (((response[0] << 8) | data[1]) == 0xFFFF){
-//         ESP_LOGE(TAG, "Forced recalibration failed");
-//         return ESP_FAIL;
-//     }
-//     ESP_LOGI(TAG, "Forced recalibration successful, CO2 value set to %d ppm", co2_value);
+
+esp_err_t scd40_force_recalibration(uint16_t co2_value) {
+    uint8_t data[5] = {SCD40_CMD_SET_FORCED_RECALIBRATION >> 8, 
+        SCD40_CMD_SET_FORCED_RECALIBRATION & 0xFF, 
+        (co2_value >> 8) & 0xFF,
+        co2_value & 0xFF,
+        crc8(data + 3, 2)};
+    uint8_t response[3];
+    esp_err_t err = i2c_master_transmit(i2c_scd40, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "I2C transmit failed: %s", esp_err_to_name(err));
+        return err;
+    }
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    i2c_master_receive(i2c_scd40, response, sizeof(response), 1000 / portTICK_PERIOD_MS);
+
+    if (crc8(response + 3, 2) != response[2]) {
+        ESP_LOGE(TAG, "Forced recalibration CRC check failed");
+        return ESP_FAIL;
+    }
+    int32_t debug;
+    load_user_setting("debug", &debug, 0);
+    if(debug == 1){
+        ESP_LOGI(TAG, "Forced recalibration successful, CO2 value set to %d ppm", co2_value);
+    }
+
      return ESP_OK;
  }
 
 // I2C function to read the measurement from the SCD40 sensor
 // Response format:
 // [CO2 (2 bytes), CO2 CRC (1 byte), Temperature (2 bytes), Temperature CRC (1 byte), Humidity (2 bytes), Humidity CRC (1 byte)]
-esp_err_t scd40_read_measurement(i2c_master_dev_handle_t handle, uint16_t *co2, float *temperature, float *humidity) {
+esp_err_t scd40_read_measurement(uint16_t *co2, float *temperature, float *humidity) {
     uint8_t data[9]; // 2 bytes for CO2, 2 bytes for temperature, 2 bytes for humidity, 3 bytes for CRCs
     uint8_t data2[3]; // For reading ready status
     uint8_t cmd[2] = {SCD40_CMD_READ_READY_STATUS >> 8, SCD40_CMD_READ_READY_STATUS & 0xFF};
     uint8_t cmd2[2] = {SCD40_CMD_READ_MEASUREMENT >> 8, SCD40_CMD_READ_MEASUREMENT & 0xFF};
 
     // Check if the sensor is ready for measurement
-    esp_err_t err = i2c_master_transmit(handle, cmd, sizeof(cmd), 1000 / portTICK_PERIOD_MS);
+    esp_err_t err = i2c_master_transmit(i2c_scd40, cmd, sizeof(cmd), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "I2C transmit failed: %s", esp_err_to_name(err));
-        // Take corrective action or exit function
+        return err;
     }
     vTaskDelay(100 / portTICK_PERIOD_MS); // Wait for the sensor to process the command
-    i2c_master_receive(handle, data2, sizeof(data2), 1000 / portTICK_PERIOD_MS);
+    i2c_master_receive(i2c_scd40, data2, sizeof(data2), 1000 / portTICK_PERIOD_MS);
     
     // Combine MSB and LSB
     uint16_t status = ((uint16_t)data2[0] << 8) | data2[1];
@@ -190,13 +201,13 @@ esp_err_t scd40_read_measurement(i2c_master_dev_handle_t handle, uint16_t *co2, 
     }
     
     // Send the read measurement command
-    i2c_master_transmit(handle, cmd2, sizeof(cmd2), 1000 / portTICK_PERIOD_MS);
+    i2c_master_transmit(i2c_scd40, cmd2, sizeof(cmd2), 1000 / portTICK_PERIOD_MS);
 
     // Wait for the measurement to be ready
     vTaskDelay(100 / portTICK_PERIOD_MS); // Adjust delay as necessary for your application
     
     // Read the measurement data
-    err = i2c_master_receive(handle, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
+    err = i2c_master_receive(i2c_scd40, data, sizeof(data), 1000 / portTICK_PERIOD_MS);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "I2C receive failed: %s", esp_err_to_name(err));
         return err;
@@ -236,7 +247,7 @@ esp_err_t scd40_read_measurement(i2c_master_dev_handle_t handle, uint16_t *co2, 
 
 // Function to log the sensor type and serial number
 // Serial number format response: Data[0-1] CRC[2] Data[3-4] CRC[5] Data[6-7] CRC[8]
-void scd40_log_sensor_type(i2c_port_t i2c_num) {
+void scd40_log_sensor_type() {
 
     // uint8_t cmd[2] = {SCD40_CMD_READ_SERIAL_NUMBER >> 8, SCD40_CMD_READ_SERIAL_NUMBER & 0xFF};
     // uint8_t data[SCD40_CMD_READ_SERIAL_NUMBER_LENGTH];
@@ -283,4 +294,6 @@ void scd40_log_sensor_type(i2c_port_t i2c_num) {
     //     ESP_LOGE(TAG, "Sensor Type: Unknown (%02X)", (data[0] & 0xF0) >> 4);
     //     return;
     // }
+
+
 }

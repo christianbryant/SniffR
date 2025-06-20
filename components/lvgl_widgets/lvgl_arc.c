@@ -13,6 +13,8 @@
 
 static const char* TAG = "lvgl_arc";
 
+lv_timer_t *arc_timer = NULL;
+
 void update_arc_color(lv_obj_t *arc, lv_color_t color)
 {
     // Update the arc's color
@@ -27,10 +29,10 @@ void update_all_arcs(lv_timer_t *timer){
     uint16_t co2_value = 0;
     float temp_value = 0.0f;
     float humid_value = 0.0f;
-    esp_err_t err = scd40_read_measurement(i2c_scd40, &co2_value, &temp_value, &humid_value);
+    esp_err_t err = scd40_read_measurement(&co2_value, &temp_value, &humid_value);
     while (err != ESP_OK) {
         ESP_LOGE("LVGL", "Failed to read SCD40 measurement: %s", esp_err_to_name(err));
-        err = scd40_read_measurement(i2c_scd40, &co2_value, &temp_value, &humid_value);
+        err = scd40_read_measurement(&co2_value, &temp_value, &humid_value);
         vTaskDelay(pdMS_TO_TICKS(1000)); // Wait before retrying
     }
 
@@ -210,8 +212,13 @@ void create_arcs(lv_obj_t *parent)
     data->co2_arc_config = co2_arc_config;
     data->temp_arc_config = temp_arc_config;
     data->humid_arc_config = humid_arc_config;
-
-    lv_timer_t *arc_timer = lv_timer_create(update_all_arcs, 5000, data); // Update every second
-    //lv_timer_ready(arc_timer);
+    int32_t low_power = 0;
+    load_user_setting("low_power", &low_power, 0);
+    arc_timer = lv_timer_create(update_all_arcs, 5000, data); // Update every 5 seconds
+    if(low_power == 1){
+        scd40_low_power_measurement();
+        lv_timer_set_period(arc_timer, 30000); // Update every 30 seconds
+    }
+    lv_timer_ready(arc_timer);
 }
 

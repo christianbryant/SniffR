@@ -10,4 +10,6 @@ void top_bar_create(lv_obj_t *parent);
 
 void create_home_page();
 
+extern lv_timer_t *bat_timer;
+
 #endif // LVGL_HOME_PAGE_H

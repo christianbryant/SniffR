@@ -28,17 +28,12 @@ typedef struct {
     arc_config_t *humid_arc_config;
 } lv_timer_data;
 
+extern lv_timer_t *arc_timer;
+
 void update_arc_color(lv_obj_t *arc, lv_color_t color);
 
 void update_all_arcs(lv_timer_t *timer);
 void update_arc_value(const arc_config_t *config);
-// void rand_update_co2_arc_value(lv_obj_t *arc, int32_t co2_value);
-// void rand_update_temp_arc_value(lv_obj_t *arc, float temp_value);
-// void rand_update_humid_arc_value(lv_obj_t *arc, float hum_value);
-
-// lv_obj_t *create_dynamic_co2_arc(lv_obj_t *parent);
-// lv_obj_t *create_dynamic_temp_arc(lv_obj_t *parent);
-// lv_obj_t *create_dynamic_humid_arc(lv_obj_t *parent);
 void create_dynamic_arc(lv_obj_t *parent, arc_config_t *config);
 
 void create_arcs(lv_obj_t *parent);

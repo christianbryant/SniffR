@@ -23,6 +23,7 @@
 #include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "esp_err.h"
+#include "driver/ledc.h"
 
 #define DISP_WIDTH 320
 #define DISP_HEIGHT 480
@@ -33,8 +34,15 @@
 #define PIN_NUM_CS   5
 #define PIN_NUM_DC   4
 #define PIN_NUM_RST  3
-#define PIN_NUM_BCKL 20
 static lv_disp_t *disp_handle = NULL;
+
+//brightness control defines
+#define PIN_NUM_BCKL 20
+#define LEDC_TIMER     LEDC_TIMER_0
+#define LEDC_MODE      LEDC_LOW_SPEED_MODE
+#define LEDC_CHANNEL   LEDC_CHANNEL_0
+#define LEDC_DUTY_RES  LEDC_TIMER_13_BIT
+#define LEDC_FREQUENCY 5000
 
 static const char* TAG = "display_driver";
 
@@ -97,7 +105,6 @@ esp_err_t display_panel_driver_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd
     vTaskDelay(pdMS_TO_TICKS(100));
     ESP_ERROR_CHECK(esp_lcd_panel_init(*panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(*panel_handle, true));
-    load_user_setting("debug", &debug, 0);
     if(debug == 1){
         ESP_LOGI(TAG, "Panel initialized and display turned on");
     }
@@ -105,23 +112,52 @@ esp_err_t display_panel_driver_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd
 
 }
 
-esp_err_t display_backlight_init(void){
-    // Backlight
-    gpio_config_t bk_gpio_config = {
-        .mode = GPIO_MODE_OUTPUT,
-        .pin_bit_mask = 1ULL << PIN_NUM_BCKL,
-        .pull_up_en = 0,
-        .pull_down_en = 0,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    gpio_config(&bk_gpio_config);
-    gpio_set_level(PIN_NUM_BCKL, 1);
+esp_err_t display_backlight_init()
+{
     int32_t debug;
     load_user_setting("debug", &debug, 0);
+    // Timer configuration
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode       = LEDC_MODE,
+        .timer_num        = LEDC_TIMER,
+        .duty_resolution  = LEDC_DUTY_RES,
+        .freq_hz          = LEDC_FREQUENCY,
+        .clk_cfg          = LEDC_AUTO_CLK
+    };
+    ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+
+    // Channel configuration
+    ledc_channel_config_t ledc_channel = {
+        .gpio_num       = PIN_NUM_BCKL,
+        .speed_mode     = LEDC_MODE,
+        .channel        = LEDC_CHANNEL,
+        .timer_sel      = LEDC_TIMER,
+        .duty           = 0,
+        .hpoint         = 0,
+        .flags.output_invert = 0
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
     if(debug == 1){
-        ESP_LOGI(TAG, "Backlight turned on");
+        ESP_LOGI(TAG, "Display Brightness control initiated");
     }
+
+
     return ESP_OK;
+}
+
+esp_err_t display_set_brightness(int percent)
+{
+    if (percent > 100){
+        percent = 100;
+    } else if (percent <= 0){
+        percent = 5;
+    }
+
+    uint32_t max_duty = (1 << LEDC_DUTY_RES) - 1;
+    uint32_t duty = (percent * max_duty) / 100;
+
+    return ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, duty) ||
+           ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
 }
 
 esp_err_t display_lvgl_init(esp_lcd_panel_io_handle_t io_handle, esp_lcd_panel_handle_t panel_handle){
@@ -177,8 +213,11 @@ esp_err_t display_hw_init(void){
     ESP_ERROR_CHECK(display_panel_init(&io_handle));
     ESP_ERROR_CHECK(display_panel_driver_init(io_handle, &panel_handle));
     panel_handle->invert_color(panel_handle, true);
-    // ESP_ERROR_CHECK(display_backlight_init());
+    ESP_ERROR_CHECK(display_backlight_init());
     ESP_ERROR_CHECK(display_lvgl_init(io_handle, panel_handle));
+    int32_t brightness;
+    load_user_setting("brightness", &brightness, 100);
+    ESP_ERROR_CHECK(display_set_brightness((int)brightness));
     int32_t debug;
     load_user_setting("debug", &debug, 0);
     if(debug == 1){
