@@ -22,7 +22,7 @@ SniffR adheres to the following principles:
 - Sensor data integration  
 - Battery management tooling
 
-# Current Features
+### Current Features
 - [x] Main Menu Display
 - [x] Settings Display
 - [x] Low Power Mode
