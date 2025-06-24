@@ -23,16 +23,16 @@ SniffR adheres to the following principles:
 - Battery management tooling
 
 # Current Features
--[x] Main Menu Display
--[x] Settings Display
--[x] Low Power Mode
-    -[x] Currently 75mAh Draw under low power mode
-    -[] Achieve sub 50mAh draw
--[x] CO2 PPM/Temp/Humidity tracking
--[] Data Logging
--[] Home Assistant Connection (MQTT)
--[] Time Display
--[] Graphical Display
+- [x] Main Menu Display
+- [x] Settings Display
+- [x] Low Power Mode
+    - [x] Currently 75mAh Draw under low power mode
+    - [] Achieve sub 50mAh draw
+- [x] CO2 PPM/Temp/Humidity tracking
+- [] Data Logging
+- [] Home Assistant Connection (MQTT)
+- [] Time Display
+- [] Graphical Display
 
 ---
 
