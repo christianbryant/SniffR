@@ -2,7 +2,7 @@
 
 **SniffR** is an open-source mobile air quality monitoring device designed to track real-time air quality conditions in your immediate environment. This project focuses on developing the software stack for SniffR, with the goal of making air quality monitoring **accessible**, **affordable**, and **user-friendly**—especially important during the wildfire seasons in the Pacific Northwest.  
 
-This device will be showcased at **Teardown PDX 2025**.  
+This device was showcased at **Teardown PDX 2025**.  
 
 ![IMG_0337](https://github.com/user-attachments/assets/7fdfe6cf-c823-4fb2-b20c-b5dbc1801b29)
 
