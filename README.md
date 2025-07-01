@@ -4,6 +4,9 @@
 
 This device will be showcased at **Teardown PDX 2025**.  
 
+![IMG_0337](https://github.com/user-attachments/assets/7fdfe6cf-c823-4fb2-b20c-b5dbc1801b29)
+
+
 ---
 
 ## 📌 Design Goals  
