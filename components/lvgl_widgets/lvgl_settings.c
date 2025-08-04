@@ -93,6 +93,12 @@ static void menu_back_btn_event_cb(lv_event_t *e) {
     }
 }
 
+static void menu_power_btn_event_cb(lv_event_t *e) {
+    if(lv_event_get_code(e) == LV_EVENT_CLICKED){
+        ESP_LOGI(TAG, "Power button pressed, shutting down");
+    }
+}
+
 
 lv_obj_t *create_slider(lv_obj_t *parent, const char* label_txt, int curr_val, int min_range, int max_range, lv_event_cb_t event_cb, char* setting_txt){
     lv_obj_t *cont = lv_menu_cont_create(parent);
@@ -152,6 +158,13 @@ void create_settings_menu(lv_obj_t *parent) {
     lv_obj_set_style_pad_gap(menu_header, 100, 0);
     lv_obj_set_flex_align(back_btn, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_set_ext_click_area(back_btn, 175);
+    lv_obj_t *power_btn = lv_btn_create(menu_header);
+    lv_label_set_text(lv_label_create(power_btn), LV_SYMBOL_POWER);
+    lv_obj_add_event_cb(power_btn, menu_power_btn_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_set_flex_align(power_btn, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_set_content_width(power_btn, 20);
+    lv_obj_set_content_height(power_btn, 40);
+    lv_obj_set_ext_click_area(power_btn, 175);
 
 
     // === Create a settings container page ===
